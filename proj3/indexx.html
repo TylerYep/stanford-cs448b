@@ -1,0 +1,75 @@
+<html>
+	<head>
+		<script src='https://d3js.org/d3.v5.min.js'></script>
+	</head>
+
+	<body>
+		Hello world!<br>
+		<svg id='vis'></svg>
+
+	<script>
+		let svg = d3.select('#vis');
+		let circle = svg.append('circle');
+
+		const plotWidth = 800;
+		const plotHeight = 600;
+		const buf = 15;
+
+		svg.attr('width', plotWidth)
+			.attr('height', plotHeight);
+
+		let allData;
+		// load data
+		d3.csv('animals.csv', function(d) {
+			// parse rows
+			return {
+				// + symbol means to treat data as numbers
+				id: +d.id,
+				species: d.animal,
+				weight: +d.weight,
+				height: +d.height
+			};
+		}).then(function(data) {
+			allData = data;
+			drawAxes();
+			drawPoints(allData);
+		});
+
+		function drawAxes() {
+			svg.append('line')
+				.attr('x1', buf)
+				.attr('x2', plotWidth - buf)
+				.attr('y1', plotHeight - buf)
+				.attr('y2', plotHeight - buf)
+				.attr('stroke', 'black');
+			svg.append('line')
+				.attr('x1', buf)
+				.attr('x2', buf)
+				.attr('y1', plotHeight - buf)
+				.attr('y2', buf)
+				.attr('stroke', 'black');
+		}
+
+		let xscale = d3.scaleLinear()
+					.domain([0, 11])
+					.range([buf, plotWidth]);
+		let yscale = d3.scaleLinear()
+					.domain([0, 10])
+					.range([plotHeight - buf, buf]);
+
+		function drawPoints(data) {
+			let points = svg.selectAll('points');
+			let pointsData = points.data(data, d => d.id);
+			pointsData.enter().append('circle')
+				.attr('r', 5)
+				.attr('cx', d => xscale(d.weight))
+				.attr('cy', d => yscale(d.height))
+				.style('fill', d => (d.species == 'cat') ? "orange" : "blue" )
+				.on('mouseover', d => svg.append('text').text(d.species))
+				.on('mouseout', d => svg.selectAll('text').remove())
+		}
+
+	</script>
+
+	</body>
+</html>
