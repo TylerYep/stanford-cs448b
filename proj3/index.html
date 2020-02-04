@@ -1,65 +1,12 @@
 <html>
 	<head>
-        <script src='https://d3js.org/d3.v5.min.js'></script>
-        <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
-        <script src="https://d3js.org/d3-selection.v1.min.js"></script>
-        <script src="https://d3js.org/d3-drag.v1.min.js"></script>
+		<script src='https://d3js.org/d3.v5.min.js'></script>
 	</head>
 
 	<body>
 		Hello world!<br>
-        <svg id='vis' style="width:50%; height:50%;"></svg>
-        <button id="button">Hi</button>
-
-	<script>
-		let svg = d3.select('#vis');
-		let circle = svg.append('circle');
-
-		const data = [
-            {x: 1, y: 2},
-            {x: 2, y: 1},
-            {x: 3, y: 4},
-            {x: 4, y: 5},
-            {x: 5, y: 3},
-        ]
-
-        let xscale = d3.scaleLinear()
-					.domain([0, 6])
-                    .range([0, 400]);
-
-		let yscale = d3.scaleLinear()
-					.domain([0, 6])
-                    .range([400, 0]);
-
-        function updatePosition(d) {
-            d3.select(this)
-                .attr('cx', d.x = d3.event.x)
-                .attr('cy', d.y = d3.event.y);
-        }
-
-		function drawCircles(data) {
-            let points = svg.selectAll('points').data(data);
-            points.enter().append('circle')
-                .style('fill', 'blue')
-                .attr('r', 10)
-                .attr('cx', d => xscale(d.x))
-                .attr('cy', d => yscale(d.y))
-                .call(d3.drag().on('drag', updatePosition));
-            points.exit().remove();
-        }
-
-        drawCircles(data);
-
-        d3.select('#button').on('click', () => {
-            drawCircles(
-                data.filter(d =>
-                    (+d.x <= 3)
-                )
-            );
-        })
-
-
-	</script>
-
+		<svg id='vis'></svg>
+		<!-- <button>Remove cats</button> -->
+	<script src='viz.js'></script>
 	</body>
 </html>
