@@ -45,15 +45,15 @@ function main() {
         let numCircles = 0;
         svg.on('click', function() {
             if (numCircles < MAX_CIRCLES) {
-                let coords = d3.mouse(this);
+                let [newX, newY] = d3.mouse(this);
                 console.log(coords);
                 if (numCircles == 0) {
-                    circles.A.x = coords[0];
-                    circles.A.y = coords[1];
+                    circles.A.x = newX;
+                    circles.A.y = newY;
                     circles.A.r = sliderA.value;
                 } else {
-                    circles.B.x = coords[0];
-                    circles.B.y = coords[1];
+                    circles.B.x = newX;
+                    circles.B.y = newY;
                     circles.B.r = sliderB.value;
                 }
                 drawCircle(svg, circles);
@@ -94,13 +94,12 @@ function drawPoints(svg, restaurants, projection, circles) {
     pointsData.append('circle')
             .style('fill', function(d) {
                 if (circles.A != null) {
-                    var restaurantX = projection([d.longitude, d.latitude])[0];
-                    var restaurantY = projection([d.longitude, d.latitude])[1];
-                    var distanceSquareOne = Math.pow((restaurantX - circles.A.x), 2)
-                                          + Math.pow((restaurantY - circles.A.y), 2);
+                    const [restaurantX, restaurantY] = projection([d.longitude, d.latitude]);
+                    const distanceSquareOne = Math.pow((restaurantX - circles.A.x), 2)
+                                            + Math.pow((restaurantY - circles.A.y), 2);
                     if (circles.B != null) {
-                        var distanceSquareTwo = Math.pow((restaurantX - circles.B.x), 2)
-                                              + Math.pow((restaurantY - circles.B.y), 2);
+                        const distanceSquareTwo = Math.pow((restaurantX - circles.B.x), 2)
+                                                + Math.pow((restaurantY - circles.B.y), 2);
                         if (distanceSquareOne < Math.pow(circles.A.r, 2)
                             && distanceSquareTwo < Math.pow(circles.B.r, 2)) {
                             return 'orange';
