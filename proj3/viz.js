@@ -1,16 +1,23 @@
+let circles = {
+    'A': {
+        'x': null,
+        'y': null,
+        'r': null
+    },
+    'B': {
+        'x': null,
+        'y': null,
+        'r': null
+    },
+}
+
 function main() {
     const sliderA = document.getElementById("sliderA");
     const sliderB = document.getElementById("sliderB");
     const valueA = document.getElementById("valueA");
     const valueB = document.getElementById("valueB");
     valueA.innerHTML = sliderA.value;
-    sliderA.oninput = function() {
-        valueA.innerHTML = this.value;
-    }
     valueB.innerHTML = sliderB.value;
-    sliderB.oninput = function() {
-        valueB.innerHTML = this.value;
-    }
 
     const PLOT_WIDTH = 1000;
     const PLOT_HEIGHT = 800;
@@ -33,31 +40,36 @@ function main() {
         };
     }).then(data => {
         restaurantData = data;
-        drawPoints(svg, data, projection, null, null);
+        drawPoints(svg, data, projection, circles);
 
         let numCircles = 0;
-        let circleOneX = null;
-        let circleOneY = null;
-        let circleTwoX = null;
-        let circleTwoY = null;
         svg.on('click', function() {
             if (numCircles < MAX_CIRCLES) {
-                var coords = d3.mouse(this);
+                let coords = d3.mouse(this);
                 console.log(coords);
                 if (numCircles == 0) {
-                    circleOneX = coords[0];
-                    circleOneY = coords[1];
-                    circleRadius = sliderA.value;
+                    circles.A.x = coords[0];
+                    circles.A.y = coords[1];
+                    circles.A.r = sliderA.value;
                 } else {
-                    circleTwoX = coords[0];
-                    circleTwoY = coords[1];
-                    circleRadius = sliderB.value;
+                    circles.B.x = coords[0];
+                    circles.B.y = coords[1];
+                    circles.B.r = sliderB.value;
                 }
-                drawCircle(svg, coords[0], coords[1], circleRadius);
-                drawPoints(svg, restaurantData, projection, [circleOneX, circleOneY, sliderA.value], [circleTwoX, circleTwoY, sliderB.value]);
+                drawCircle(svg, circles);
+                drawPoints(svg, restaurantData, projection, circles);
             }
             numCircles++;
         })
+
+        sliderA.onchange = function() {
+            valueA.innerHTML = this.value;
+            drawCircle(svg, circles);
+        }
+        sliderB.onchange = function() {
+            valueB.innerHTML = this.value;
+            drawCircle(svg, circles);
+        }
     });
 }
 
@@ -67,7 +79,7 @@ function main() {
 //     drawPoints(newData);
 // });
 
-function drawPoints(svg, restaurants, projection, circleOne, circleTwo) {
+function drawPoints(svg, restaurants, projection, circles) {
     const DOTSIZE = 3;
     let pointsData = svg.selectAll('points').data(restaurants, d => d.name).enter();
     // pointsData.filter(function(d) {
@@ -81,21 +93,21 @@ function drawPoints(svg, restaurants, projection, circleOne, circleTwo) {
     // })
     pointsData.append('circle')
             .style('fill', function(d) {
-                if (circleOne != null) {
+                if (circles.A != null) {
                     var restaurantX = projection([d.longitude, d.latitude])[0];
                     var restaurantY = projection([d.longitude, d.latitude])[1];
-                    var distanceSquareOne = Math.pow((restaurantX - circleOne[0]), 2)
-                                          + Math.pow((restaurantY - circleOne[1]), 2);
-                    if (circleTwo[0] != null) {
-                        var distanceSquareTwo = Math.pow((restaurantX - circleTwo[0]), 2)
-                                              + Math.pow((restaurantY - circleTwo[1]), 2);
-                        if (distanceSquareOne < Math.pow(circleOne[2], 2)
-                            && distanceSquareTwo < Math.pow(circleTwo[2], 2)) {
+                    var distanceSquareOne = Math.pow((restaurantX - circles.A.x), 2)
+                                          + Math.pow((restaurantY - circles.A.y), 2);
+                    if (circles.B != null) {
+                        var distanceSquareTwo = Math.pow((restaurantX - circles.B.x), 2)
+                                              + Math.pow((restaurantY - circles.B.y), 2);
+                        if (distanceSquareOne < Math.pow(circles.A.r, 2)
+                            && distanceSquareTwo < Math.pow(circles.B.r, 2)) {
                             return 'orange';
                         }
                         return 'gray';
                     }
-                    if (distanceSquareOne < Math.pow(circleOne[2], 2)) {
+                    if (distanceSquareOne < Math.pow(circles.A.r, 2)) {
                         return 'orange';
                     }
                     return 'gray';
@@ -146,14 +158,31 @@ function drawMap(svg) {
     return projection
 }
 
-function drawCircle(svg, x, y, size) {
-    console.log('Drawing circle at', x, y, size);
+function drawCircle(svg, circles) {
+    let x = circles.A.x;
+    let y = circles.A.y;
+    let r = circles.A.r;
+    console.log('Drawing circle at', x, y, r);
     svg.append("circle")
         .attr('fill', 'gray')
         .attr('opacity', 0.5)
         .attr("cx", x)
         .attr("cy", y)
-        .attr("r", size);
+        .attr("r", r);
+
+
+    if (circles.B != null) {
+        x = circles.B.x;
+        y = circles.B.y;
+        r = circles.B.r;
+        console.log('Drawing circle at', x, y, r);
+        svg.append("circle")
+            .attr('fill', 'gray')
+            .attr('opacity', 0.5)
+            .attr("cx", x)
+            .attr("cy", y)
+            .attr("r", r);
+    }
 }
 
 
