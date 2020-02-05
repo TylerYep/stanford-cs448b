@@ -1,6 +1,8 @@
 function main() {
     const PLOT_WIDTH = 1000;
     const PLOT_HEIGHT = 800;
+    const CIRCLE_RADIUS = 100;
+    let restaurantData;
     const svg = d3.select('#vis')
                 .attr('width', PLOT_WIDTH)
                 .attr('height', PLOT_HEIGHT);
@@ -17,7 +19,15 @@ function main() {
             longitude: +d.longitude,
         };
     }).then(data => {
-        drawPoints(svg, data, projection);
+        restaurantData = data;
+        drawPoints(svg, data, projection, null, null, null);
+
+        svg.on('click', function() {
+            var coords = d3.mouse(this);
+            console.log(coords);
+            drawCircle(svg, coords[0], coords[1], CIRCLE_RADIUS);
+            drawPoints(svg, restaurantData, projection, coords[0], coords[1], CIRCLE_RADIUS);
+        })
     });
 }
 
@@ -27,7 +37,7 @@ function main() {
 //     drawPoints(newData);
 // });
 
-function drawPoints(svg, restaurants, projection) {
+function drawPoints(svg, restaurants, projection, circle_x, circle_y, radius) {
     const DOTSIZE = 3;
     let pointsData = svg.selectAll('points').data(restaurants, d => d.name).enter();
     pointsData.append('circle')
@@ -48,6 +58,13 @@ function drawPoints(svg, restaurants, projection) {
             .on('mouseout', _ => {
                 svg.selectAll('text').remove();
             });
+    pointsData.filter(function(d) {
+        if (circle_x != null && circle_y != null) {
+            var distance_square = Math.pow((+d.longitude - circle_x), 2) + Math.pow((+d.latitude - circle_y), 2);
+            return distance_square < Math.pow(radius, 2);
+        }
+        return true;
+    })
     pointsData.exit().remove();
 }
 
@@ -74,6 +91,16 @@ function drawMap(svg) {
         .attr('xlink:href', 'map.svg');
 
     return projection
+}
+
+function drawCircle(svg, x, y, size) {
+    console.log('Drawing circle at', x, y, size);
+    svg.append("circle")
+        .attr('fill', 'gray')
+        .attr('opacity', 0.5)
+        .attr("cx", x)
+        .attr("cy", y)
+        .attr("r", size);
 }
 
 
