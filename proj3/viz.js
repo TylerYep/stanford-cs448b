@@ -1,17 +1,10 @@
-// let circles = [
-//     {x: null, y: null, r: null},
-//     {x: null, y: null, r: null},
-// ]
-
-let circles = []
-
 function main() {
-    const sliderA = document.getElementById("sliderA");
-    const sliderB = document.getElementById("sliderB");
+    const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
+
     const valueA = document.getElementById("valueA");
     const valueB = document.getElementById("valueB");
-    valueA.innerHTML = sliderA.value;
-    valueB.innerHTML = sliderB.value;
+    valueA.innerHTML = sliders[0].value;
+    valueB.innerHTML = sliders[1].value;
 
     const PLOT_WIDTH = 1000;
     const PLOT_HEIGHT = 800;
@@ -24,6 +17,7 @@ function main() {
     const projection = drawMap(svg);
 
     let restaurantData;
+    let circles = [];
     d3.csv('restaurant.csv', d => {
         // parse rows, +symbol means to treat data as numbers
         return {
@@ -38,51 +32,36 @@ function main() {
         restaurantData = data;
         drawPoints(svg, data, projection, circles);
 
-        let numCircles = 0;
-
-
-
         svg.on('click', function() {
-
-            
-            if (numCircles < MAX_CIRCLES) {
-                let [newX, newY] = d3.mouse(this);
-                if (numCircles == 0) {
-                    circles[0].x = newX;
-                    circles[0].y = newY;
-                    circles[0].r = parseInt(sliderA.value);
-                    circles.append({x: newX, y: newY, r: parseInt(sliderA.value)});
-                    numCircles++;
-                } else if (numCircles == 1) {
-                    circles[1].x = newX;
-                    circles[1].y = newY;
-                    circles[1].r = parseInt(sliderB.value);
-                    numCircles++;
-                }
-
-                drawCircle(svg, circles);
+            if (circles.length < MAX_CIRCLES) {
+                const [newX, newY] = d3.mouse(this);
+                const sliderIndex = (circles.length === 0) ? 0 : 1;
+                circles.push({x: newX, y: newY, r: parseInt(sliders[sliderIndex].value)});
+                drawCircles(svg, circles);
                 drawPoints(svg, restaurantData, projection, circles);
             }
         })
 
-
-        const button = document.getElementById('resetBtn');
-        button.addEventListener('click', () => {
-            numCircles = 0;
-            // let newData = allData.filter(d => d.species == 'dog');
-            drawPoints(svg, restaurantData, projection, []);
-            drawCircle(svg, []);
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            circles = [];
+            drawPoints(svg, restaurantData, projection, circles);
+            drawCircles(svg, circles);
         });
 
-        sliderA.onchange = function() {
+        sliders[0].onchange = function() {
             valueA.innerHTML = this.value;
-            circles[0].r = parseInt(this.value);
-            drawCircle(svg, circles);
+            if (circles.length >= 1) {
+                circles[0].r = parseInt(this.value);
+                drawCircles(svg, circles);
+            }
         }
-        sliderB.onchange = function() {
+
+        sliders[1].onchange = function() {
             valueB.innerHTML = this.value;
-            circles[1].r = parseInt(this.value);
-            drawCircle(svg, circles);
+            if (circles.length >= 2) {
+                circles[1].r = parseInt(this.value);
+                drawCircles(svg, circles);
+            }
         }
     });
 }
@@ -110,8 +89,8 @@ function drawPoints(svg, restaurants, projection, circles) {
     let pointsData = svg.selectAll('points').data(restaurants, d => d.name).enter();
     pointsData.filter(healthFilter);
     pointsData.append('circle')
-        .style('fill', function(d) {
-            if (circles[0].x == null) {
+        .style('fill', d => {
+            if (circles.length < 1) {
                 return 'orange';
             }
             const restaurantPoint = projection([d.longitude, d.latitude]);
@@ -119,7 +98,7 @@ function drawPoints(svg, restaurants, projection, circles) {
             const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
             const r0Squared = Math.pow(circles[0].r, 2);
 
-            if (circles[1].x == null) {
+            if (circles.length < 2) {
                 return (distanceSquareOne < r0Squared) ? 'orange' : 'gray';
             }
 
@@ -173,8 +152,8 @@ function drawMap(svg) {
     return projection
 }
 
-function drawCircle(svg, circles) {
-    let circleData = svg.selectAll('circ').data(circles).enter();
+function drawCircles(svg, circles) {
+    let circleData = svg.selectAll('circ').data(circles, d => d).enter();
     circleData.append("circle")
         .attr("class", "radiusCircle")
         .attr('fill', 'gray')
@@ -182,36 +161,7 @@ function drawCircle(svg, circles) {
         .attr("cx", d => d.x)
         .attr("cy", d => d.y)
         .attr("r", d => d.r)
-
     circleData.exit().remove();
-
-    // let x = circles[0].x;
-    // let y = circles[0].y;
-    // let r = circles[0].r;
-    // console.log('Drawing circle at', x, y, r);
-    // let circleA = svg.append("circle")
-    //     .attr("class", "radiusCircle")
-    //     .attr('fill', 'gray')
-    //     .attr('opacity', 0.5)
-    //     .attr("cx", x)
-    //     .attr("cy", y)
-    //     .attr("r", r)
-    // circleA.exit().remove();
-
-    // if (circles[1] != null) {
-    //     x = circles[1].x;
-    //     y = circles[1].y;
-    //     r = circles[1].r;
-    //     console.log('Drawing circle at', x, y, r);
-    //     let circleB = svg.append("circle")
-    //         .attr("class", "radiusCircle")
-    //         .attr('fill', 'gray')
-    //         .attr('opacity', 0.5)
-    //         .attr("cx", x)
-    //         .attr("cy", y)
-    //         .attr("r", r)
-    //     circleB.exit().remove();
-    // }
 }
 
 
