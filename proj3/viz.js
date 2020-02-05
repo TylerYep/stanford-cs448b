@@ -14,7 +14,6 @@ function main() {
 
     const PLOT_WIDTH = 1000;
     const PLOT_HEIGHT = 800;
-    const CIRCLE_RADIUS = 100;
     const MAX_CIRCLES = 2;
     let restaurantData;
     const svg = d3.select('#vis')
@@ -48,12 +47,14 @@ function main() {
                 if (numCircles == 0) {
                     circleOneX = coords[0];
                     circleOneY = coords[1];
+                    circleRadius = sliderA.value;
                 } else {
                     circleTwoX = coords[0];
                     circleTwoY = coords[1];
+                    circleRadius = sliderB.value;
                 }
-                drawCircle(svg, coords[0], coords[1], CIRCLE_RADIUS);
-                drawPoints(svg, restaurantData, projection, [circleOneX, circleOneY, CIRCLE_RADIUS], [circleTwoX, circleTwoY, CIRCLE_RADIUS]);
+                drawCircle(svg, coords[0], coords[1], circleRadius);
+                drawPoints(svg, restaurantData, projection, [circleOneX, circleOneY, sliderA.value], [circleTwoX, circleTwoY, sliderB.value]);
             }
             numCircles++;
         })
@@ -83,10 +84,13 @@ function drawPoints(svg, restaurants, projection, circleOne, circleTwo) {
                 if (circleOne != null) {
                     var restaurantX = projection([d.longitude, d.latitude])[0];
                     var restaurantY = projection([d.longitude, d.latitude])[1];
-                    var distanceSquareOne = Math.pow((restaurantX - circleOne[0]), 2) + Math.pow((restaurantY - circleOne[1]), 2);
+                    var distanceSquareOne = Math.pow((restaurantX - circleOne[0]), 2)
+                                          + Math.pow((restaurantY - circleOne[1]), 2);
                     if (circleTwo[0] != null) {
-                        var distanceSquareTwo = Math.pow((restaurantX - circleTwo[0]), 2) + Math.pow((restaurantY - circleTwo[1]), 2);
-                        if (distanceSquareOne < Math.pow(circleOne[2], 2) && distanceSquareTwo < Math.pow(circleTwo[2], 2)) {
+                        var distanceSquareTwo = Math.pow((restaurantX - circleTwo[0]), 2)
+                                              + Math.pow((restaurantY - circleTwo[1]), 2);
+                        if (distanceSquareOne < Math.pow(circleOne[2], 2)
+                            && distanceSquareTwo < Math.pow(circleTwo[2], 2)) {
                             return 'orange';
                         }
                         return 'gray';
