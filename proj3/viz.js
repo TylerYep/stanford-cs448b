@@ -40,8 +40,28 @@ function main() {
 function drawPoints(svg, restaurants, projection, circle_x, circle_y, radius) {
     const DOTSIZE = 3;
     let pointsData = svg.selectAll('points').data(restaurants, d => d.name).enter();
+    // pointsData.filter(function(d) {
+    //     if (circle_x != null && circle_y != null) {
+    //         var restaurant_x = projection([d.longitude, d.latitude])[0];
+    //         var restaurant_y = projection([d.longitude, d.latitude])[1];
+    //         var distance_square = Math.pow((restaurant_x - circle_x), 2) + Math.pow((restaurant_y - circle_y), 2);
+    //         return distance_square < Math.pow(radius, 2);
+    //     }
+    //     return true;
+    // })
     pointsData.append('circle')
-            .style('fill', 'orange')
+            .style('fill', function(d) {
+                if (circle_x != null && circle_y != null) {
+                    var restaurant_x = projection([d.longitude, d.latitude])[0];
+                    var restaurant_y = projection([d.longitude, d.latitude])[1];
+                    var distance_square = Math.pow((restaurant_x - circle_x), 2) + Math.pow((restaurant_y - circle_y), 2);
+                    if (distance_square < Math.pow(radius, 2)) {
+                        return 'orange';
+                    }
+                    return 'gray';
+                }
+                return 'orange';
+            })
             .attr('cx', d => projection([d.longitude, d.latitude])[0])
             .attr('cy', d => projection([d.longitude, d.latitude])[1])
             .attr('r', DOTSIZE)
@@ -58,13 +78,6 @@ function drawPoints(svg, restaurants, projection, circle_x, circle_y, radius) {
             .on('mouseout', _ => {
                 svg.selectAll('text').remove();
             });
-    pointsData.filter(function(d) {
-        if (circle_x != null && circle_y != null) {
-            var distance_square = Math.pow((+d.longitude - circle_x), 2) + Math.pow((+d.latitude - circle_y), 2);
-            return distance_square < Math.pow(radius, 2);
-        }
-        return true;
-    })
     pointsData.exit().remove();
 }
 
