@@ -93,11 +93,11 @@ function drawPoints(svg, restaurants, projection, circles) {
     // })
     pointsData.append('circle')
             .style('fill', function(d) {
-                if (circles.A != null) {
+                if (circles.A.x != null) {
                     const [restaurantX, restaurantY] = projection([d.longitude, d.latitude]);
                     const distanceSquareOne = Math.pow((restaurantX - circles.A.x), 2)
                                             + Math.pow((restaurantY - circles.A.y), 2);
-                    if (circles.B != null) {
+                    if (circles.B.x != null) {
                         const distanceSquareTwo = Math.pow((restaurantX - circles.B.x), 2)
                                                 + Math.pow((restaurantY - circles.B.y), 2);
                         if (distanceSquareOne < Math.pow(circles.A.r, 2)
@@ -106,11 +106,12 @@ function drawPoints(svg, restaurants, projection, circles) {
                         }
                         return 'gray';
                     }
-                    if (distanceSquareOne < Math.pow(circles.A.r, 2)) {
+                    if (distanceSquareA < Math.pow(circles.A.r, 2)) {
                         return 'orange';
                     }
                     return 'gray';
                 }
+                console.log("HERE");
                 return 'orange';
             })
             .attr('cx', d => projection([d.longitude, d.latitude])[0])
@@ -162,25 +163,26 @@ function drawCircle(svg, circles) {
     let y = circles.A.y;
     let r = circles.A.r;
     console.log('Drawing circle at', x, y, r);
-    svg.append("circle")
+    let circleA = svg.append("circle")
         .attr('fill', 'gray')
         .attr('opacity', 0.5)
         .attr("cx", x)
         .attr("cy", y)
-        .attr("r", r);
-
+        .attr("r", r)
+    // circleA.exit();
 
     if (circles.B != null) {
         x = circles.B.x;
         y = circles.B.y;
         r = circles.B.r;
         console.log('Drawing circle at', x, y, r);
-        svg.append("circle")
+        let circleB = svg.append("circle")
             .attr('fill', 'gray')
             .attr('opacity', 0.5)
             .attr("cx", x)
             .attr("cy", y)
-            .attr("r", r);
+            .attr("r", r)
+        // circleB.exit().remove();
     }
 }
 
