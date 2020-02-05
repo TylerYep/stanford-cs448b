@@ -1,21 +1,12 @@
-const plotWidth = 1000;
-const plotHeight = 800;
-const buf = 15;
-const svg = d3.select('#vis')
-            .attr('width', plotWidth)
-            .attr('height', plotHeight);
-
-
 function main() {
-    let restaurantData;
-    // const button = document.querySelector('button');
-    // button.addEventListener('click', () => {
-    //     let newData = allData.filter(d => d.species == 'dog');
-    //     drawPoints(newData);
-    // });
-    projection = drawMap();
+    const PLOT_WIDTH = 1000;
+    const PLOT_HEIGHT = 800;
+    const svg = d3.select('#vis')
+                .attr('width', PLOT_WIDTH)
+                .attr('height', PLOT_HEIGHT);
 
-    d3.csv('restaurant.csv', (d) => {
+    const projection = drawMap(svg);
+    d3.csv('restaurant.csv', d => {
         // parse rows, +symbol means to treat data as numbers
         return {
             name: d.name,
@@ -26,23 +17,32 @@ function main() {
             longitude: +d.longitude,
         };
     }).then(data => {
-        drawPoints(data, projection);
-        restaurantData = data;
+        drawPoints(svg, data, projection);
     });
 }
 
+// const button = document.querySelector('button');
+// button.addEventListener('click', () => {
+//     let newData = allData.filter(d => d.species == 'dog');
+//     drawPoints(newData);
+// });
 
-function drawPoints(restaurants, projection) {
+function drawPoints(svg, restaurants, projection) {
+    const DOTSIZE = 3;
     let pointsData = svg.selectAll('points').data(restaurants, d => d.name).enter();
     pointsData.append('circle')
             .style('fill', 'orange')
             .attr('cx', d => projection([d.longitude, d.latitude])[0])
             .attr('cy', d => projection([d.longitude, d.latitude])[1])
-            .attr('r', 2)
+            .attr('r', DOTSIZE)
+            // .on('click', function() {
+            //     // Needs to be a function to have access to "this".
+            //     d3.select(this).style("fill", 'blue');
+            // })
             .on('mouseover', d => {
                 svg.append('text')
-                    .attr('x', _ => d.longitude + 10)
-                    .attr('y', _ => d.latitude + 5)
+                    .attr('x', _ => projection([d.longitude, d.latitude])[0] + 10)
+                    .attr('y', _ => projection([d.longitude, d.latitude])[1] + 5)
                     .text(d.name);
             })
             .on('mouseout', _ => {
@@ -52,26 +52,27 @@ function drawPoints(restaurants, projection) {
 }
 
 
-function drawMap() {
-    const mapWidth = 1000;
-    const mapHeight = 750;
+function drawMap(svg) {
+    const MAP_WIDTH = 1000;
+    const MAP_HEIGHT = 750;
+    const SCALE = 190000;
 
     // Set up projection that the map is using
-    const scale = 190000;
     const projection = d3.geoMercator()
                         .center([-122.061578, 37.385532])
-                        .scale(scale)
-                        .translate([mapWidth / 2, mapHeight / 2]);
-    // This is the mapping between <longitude, latitude> position to <x, y> pixel position on the map
+                        .scale(SCALE)
+                        .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
+    // This maps between <longitude, latitude> position to <x, y> pixel position on the map
     // projection is a function and it has an inverse:
     // projection([lon, lat]) returns [x, y]
     // projection.invert([x, y]) returns [lon, lat]
 
     // Add SVG map at correct size
     svg.append('image')
-        .attr('width', mapWidth)
-        .attr('height', mapHeight)
+        .attr('width', MAP_WIDTH)
+        .attr('height', MAP_HEIGHT)
         .attr('xlink:href', 'map.svg');
+
     return projection
 }
 
