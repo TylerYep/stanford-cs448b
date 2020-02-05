@@ -1,4 +1,17 @@
 function main() {
+    const sliderA = document.getElementById("sliderA");
+    const sliderB = document.getElementById("sliderB");
+    const valueA = document.getElementById("valueA");
+    const valueB = document.getElementById("valueB");
+    valueA.innerHTML = sliderA.value;
+    sliderA.oninput = function() {
+        valueA.innerHTML = this.value;
+    }
+    valueB.innerHTML = sliderB.value;
+    sliderB.oninput = function() {
+        valueB.innerHTML = this.value;
+    }
+
     const PLOT_WIDTH = 1000;
     const PLOT_HEIGHT = 800;
     const CIRCLE_RADIUS = 100;
