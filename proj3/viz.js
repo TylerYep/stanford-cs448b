@@ -148,6 +148,10 @@ function drawPoints() {
             })
             .on('mouseout', _ => {
                 svg.selectAll('text').remove();
+            })
+            .on('click', function() {
+                // Needs to be a function to have access to "this".
+                d3.select(this).style("fill", 'blue');
             }),
         update => update.style('fill', colorPoints)
     )
