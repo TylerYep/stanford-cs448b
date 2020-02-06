@@ -1,10 +1,9 @@
 function main() {
     const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
 
-    const valueA = document.getElementById("valueA");
-    const valueB = document.getElementById("valueB");
-    valueA.innerHTML = sliders[0].value;
-    valueB.innerHTML = sliders[1].value;
+    const textValues = [document.getElementById("valueA"), document.getElementById("valueB")];
+    textValues[0].innerHTML = sliders[0].value;
+    textValues[1].innerHTML = sliders[1].value;
 
     const PLOT_WIDTH = 1000;
     const PLOT_HEIGHT = 800;
@@ -65,19 +64,22 @@ function main() {
         // }
 
         d3.select('#sliderA').on("input", function() {
-            updateCircle(svg, '#circle0', +this.value);
+            updateCircle(svg, circles, sliders, textValues, 0, +this.value);
+            drawPoints(svg, restaurantData, projection, circles);
         });
 
         d3.select('#sliderB').on("input", function() {
-            updateCircle(svg, '#circle1', +this.value);
+            updateCircle(svg, circles, sliders, textValues, 1, +this.value);
+            drawPoints(svg, restaurantData, projection, circles);
         });
     });
 }
 
-function updateCircle(svg, id, nRadius) {
+function updateCircle(svg, circles, sliders, textValues, i, nRadius) {
     console.log("HERE");
-    svg.selectAll(id)
-        .attr('r', nRadius);
+    textValues[i].innerHTML = sliders[i].value;
+    circles[i].r = parseInt(sliders[i].value);
+    svg.selectAll("#circle"+i).attr('r', nRadius);
 }
 
 function healthFilter(d) {
@@ -167,6 +169,7 @@ function drawMap(svg) {
 
 function drawCircles(svg, circles) {
     let circleData = svg.selectAll('circ').data(circles, d => d).enter();
+    console.log(circleData);
     circleData.append("circle")
         .attr('id', d => d.id)
         .attr('fill', 'gray')
@@ -174,7 +177,7 @@ function drawCircles(svg, circles) {
         .attr("cx", d => d.x)
         .attr("cy", d => d.y)
         .attr("r", d => d.r)
-    circleData.exit();
+    circleData.exit().remove();
 }
 
 
