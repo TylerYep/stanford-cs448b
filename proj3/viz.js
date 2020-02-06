@@ -32,55 +32,51 @@ function main() {
         };
     }).then(data => {
         restaurantData = data;
-        drawPoints(svg, data, projection, circles);
-
-        svg.on('click', function() {
-            if (circles.length < MAX_CIRCLES) {
-                const [newX, newY] = d3.mouse(this);
-                const sliderIndex = (circles.length === 0) ? 0 : 1;
-                circles.push({
-                    id: 'circle' + circles.length,
-                    x: newX,
-                    y: newY,
-                    r: parseInt(sliders[sliderIndex].value)
-                });
-                drawCircles(svg, circles);
-                drawPoints(svg, restaurantData, projection, circles);
-            }
-        })
-
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            circles = [];
-            drawCircles(svg, circles);
-            drawPoints(svg, restaurantData, projection, circles);
-        });
-
-        d3.select('#sliderA').on("input", function() {
-            updateCircle(svg, circles, sliders, textValues, 0, +this.value);
-            drawPoints(svg, restaurantData, projection, circles);
-        });
-
-        d3.select('#sliderB').on("input", function() {
-            updateCircle(svg, circles, sliders, textValues, 1, +this.value);
-            drawPoints(svg, restaurantData, projection, circles);
-        });
+        drawPoints();
+        registerCallbacks(sliders, textValues);
     });
 }
 
 
-function updatePosition(d) {
-    d3.select(this)
-        .attr('cx', d.x = d3.event.x)
-        .attr('cy', d.y = d3.event.y);
-    drawPoints(svg, restaurantData, projection, circles);
+function registerCallbacks(sliders, textValues) {
+    svg.on('click', function() {
+        if (circles.length < MAX_CIRCLES) {
+            const [newX, newY] = d3.mouse(this);
+            circles.push({
+                id: 'circle' + circles.length,
+                x: newX,
+                y: newY,
+                r: parseInt(sliders[circles.length].value)
+            });
+            drawCircles();
+            drawPoints();
+        }
+    })
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        circles = [];
+        drawCircles();
+        drawPoints();
+    });
+
+    d3.select('#sliderA').on("input", function() {
+        updateCircle(sliders, textValues, 0);
+        drawPoints();
+    });
+
+    d3.select('#sliderB').on("input", function() {
+        updateCircle(sliders, textValues, 1);
+        drawPoints();
+    });
 }
 
 
-function updateCircle(svg, circles, sliders, textValues, i, nRadius) {
-    textValues[i].innerHTML = sliders[i].value;
+function updateCircle(sliders, textValues, i) {
+    const newRadius = parseInt(sliders[i].value);
+    textValues[i].innerHTML = newRadius;
     if (i < circles.length) {
-        circles[i].r = parseInt(sliders[i].value);
-        svg.selectAll("#circle"+i).attr('r', nRadius);
+        circles[i].r = parseInt(newRadius);
+        svg.selectAll("#circle"+i).attr('r', newRadius);
     }
 }
 
@@ -111,11 +107,33 @@ function colorPoints(d) {
 }
 
 
-function drawPoints(svg, restaurants, projection, circles) {
-    const DOTSIZE = 3;
-    svg.selectAll('.points').data(restaurants, d => d.id).join(
+function updatePosition(d) {
+    d3.select(this)
+        .attr('cx', d.x = d3.event.x)
+        .attr('cy', d.y = d3.event.y);
+    drawPoints();
+}
+
+
+function drawCircles() {
+    svg.selectAll('circle').data(circles, d => d.id).join(
         enter => enter.append('circle')
             .attr('id', d => d.id)
+            .attr('fill', 'gray')
+            .attr('opacity', 0.3)
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => d.r)
+            .call(d3.drag().on('drag', updatePosition)),
+        update => update.attr("r", d => d.r)
+    )
+}
+
+
+function drawPoints() {
+    const DOTSIZE = 3;
+    svg.selectAll('.points').data(restaurantData, d => d.id).join(
+        enter => enter.append('circle')
             .attr('class', 'points')
             .attr('opacity', 1)
             .style('fill', colorPoints)
@@ -158,22 +176,6 @@ function drawMap(svg) {
         .attr('xlink:href', 'map.svg');
 
     return projection
-}
-
-
-function drawCircles(svg, circles) {
-    svg.selectAll('circle').data(circles, d => d.id).join(
-        enter => enter.append('circle')
-            .join('circle')
-            .attr('id', d => d.id)
-            .attr('fill', 'gray')
-            .attr('opacity', 0.3)
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y)
-            .attr("r", d => d.r)
-            .call(d3.drag().on('drag', updatePosition)),
-        update => update.attr("r", d => d.r)
-    )
 }
 
 
