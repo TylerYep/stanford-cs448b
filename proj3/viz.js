@@ -36,7 +36,7 @@ function main() {
             if (circles.length < MAX_CIRCLES) {
                 const [newX, newY] = d3.mouse(this);
                 const sliderIndex = (circles.length === 0) ? 0 : 1;
-                circles.push({x: newX, y: newY, r: parseInt(sliders[sliderIndex].value)});
+                circles.push({id: 'circle' + circles.length, x: newX, y: newY, r: parseInt(sliders[sliderIndex].value)});
                 drawCircles(svg, circles);
                 drawPoints(svg, restaurantData, projection, circles);
             }
@@ -48,24 +48,37 @@ function main() {
             drawCircles(svg, circles);
         });
 
-        sliders[0].onchange = function() {
-            valueA.innerHTML = this.value;
-            if (circles.length >= 1) {
-                circles[0].r = parseInt(this.value);
-                drawCircles(svg, circles);
-            }
-        }
+        // sliders[0].onchange = function() {
+        //     valueA.innerHTML = this.value;
+        //     if (circles.length >= 1) {
+        //         circles[0].r = parseInt(this.value);
+        //         drawCircles(svg, circles);
+        //     }
+        // }
 
-        sliders[1].onchange = function() {
-            valueB.innerHTML = this.value;
-            if (circles.length >= 2) {
-                circles[1].r = parseInt(this.value);
-                drawCircles(svg, circles);
-            }
-        }
+        // sliders[1].onchange = function() {
+        //     valueB.innerHTML = this.value;
+        //     if (circles.length >= 2) {
+        //         circles[1].r = parseInt(this.value);
+        //         drawCircles(svg, circles);
+        //     }
+        // }
+
+        d3.select('#sliderA').on("input", function() {
+            updateCircle(svg, '#circle0', +this.value);
+        });
+
+        d3.select('#sliderB').on("input", function() {
+            updateCircle(svg, '#circle1', +this.value);
+        });
     });
 }
 
+function updateCircle(svg, id, nRadius) {
+    console.log("HERE");
+    svg.selectAll(id)
+        .attr('r', nRadius);
+}
 
 function healthFilter(d) {
     // if (circle_x != null && circle_y != null) {
@@ -155,13 +168,13 @@ function drawMap(svg) {
 function drawCircles(svg, circles) {
     let circleData = svg.selectAll('circ').data(circles, d => d).enter();
     circleData.append("circle")
-        .attr("class", "radiusCircle")
+        .attr('id', d => d.id)
         .attr('fill', 'gray')
         .attr('opacity', 0.5)
         .attr("cx", d => d.x)
         .attr("cy", d => d.y)
         .attr("r", d => d.r)
-    circleData.exit().remove();
+    circleData.exit();
 }
 
 
