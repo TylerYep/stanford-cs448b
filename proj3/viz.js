@@ -1,22 +1,25 @@
 'use strict';
 
+const PLOT_WIDTH = 1000;
+const PLOT_HEIGHT = 800;
+const MAX_CIRCLES = 2;
+
+const svg = d3.select('#vis')
+            .attr('width', PLOT_WIDTH)
+            .attr('height', PLOT_HEIGHT);
+
+let restaurantData;
+let circles = [];
+const projection = drawMap(svg);
+
+
+
+
 function main() {
     const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
     const textValues = [document.getElementById("valueA"), document.getElementById("valueB")];
     textValues[0].innerHTML = sliders[0].value;
     textValues[1].innerHTML = sliders[1].value;
-
-    const PLOT_WIDTH = 1000;
-    const PLOT_HEIGHT = 800;
-    const MAX_CIRCLES = 2;
-
-    const svg = d3.select('#vis')
-                .attr('width', PLOT_WIDTH)
-                .attr('height', PLOT_HEIGHT);
-
-    let restaurantData;
-    let circles = [];
-    const projection = drawMap(svg);
 
     d3.csv('restaurant.csv', d => {
         // parse rows, +symbol means to treat data as numbers
@@ -88,7 +91,7 @@ function drawPoints(svg, restaurants, projection, circles) {
     const DOTSIZE = 3;
     let pointsData = svg.selectAll('.points').data(restaurants, d => d.name).enter();
     pointsData.append('circle')
-        // .attr('class', 'points')
+        .attr('class', '.points')
         .style('fill', d => {
             if (circles.length < 1) {
                 return 'orange';
@@ -108,11 +111,11 @@ function drawPoints(svg, restaurants, projection, circles) {
                 return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared)
                     ? 'orange' : 'gray';
         })
-        // .attr('opacity', 0.2)
+        .attr('opacity', 0.2)
         .attr('cx', d => projection([d.longitude, d.latitude])[0])
         .attr('cy', d => projection([d.longitude, d.latitude])[1])
         .attr('r', DOTSIZE)
-        .join('points')
+        .join('.points')
         .on('mouseover', d => {
             svg.append('text')
                 .attr('x', _ => projection([d.longitude, d.latitude])[0] + 10)
