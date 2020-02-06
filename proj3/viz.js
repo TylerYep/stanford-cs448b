@@ -55,12 +55,12 @@ function main() {
             drawPoints(svg, restaurantData, projection, circles);
         });
 
-        d3.select('#sliderA').on("change", function() {
+        d3.select('#sliderA').on("input", function() {
             updateCircle(svg, circles, sliders, textValues, 0, +this.value);
             drawPoints(svg, restaurantData, projection, circles);
         });
 
-        d3.select('#sliderB').on("change", function() {
+        d3.select('#sliderB').on("input", function() {
             updateCircle(svg, circles, sliders, textValues, 1, +this.value);
             drawPoints(svg, restaurantData, projection, circles);
         });
@@ -78,8 +78,10 @@ function updatePosition(d) {
 
 function updateCircle(svg, circles, sliders, textValues, i, nRadius) {
     textValues[i].innerHTML = sliders[i].value;
-    circles[i].r = parseInt(sliders[i].value);
-    svg.selectAll("#circle"+i).attr('r', nRadius);
+    if (i < circles.length) {
+        circles[i].r = parseInt(sliders[i].value);
+        svg.selectAll("#circle"+i).attr('r', nRadius);
+    }
 }
 
 
@@ -88,46 +90,49 @@ function squaredDistanceBetween(a, b) {
 }
 
 
+function colorPoints(d) {
+    if (circles.length < 1) {
+        return 'orange';
+    }
+    const restaurantPoint = projection([d.longitude, d.latitude]);
+    const circle0Point = [circles[0].x, circles[0].y];
+    const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
+    const r0Squared = Math.pow(circles[0].r, 2);
+
+    if (circles.length < 2) {
+        return (distanceSquareOne < r0Squared) ? 'orange' : 'gray';
+    }
+
+    const circle1Point = [circles[1].x, circles[1].y];
+        const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
+        const r1Squared = Math.pow(circles[1].r, 2);
+        return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared)
+            ? 'orange' : 'gray';
+}
+
+
 function drawPoints(svg, restaurants, projection, circles) {
     const DOTSIZE = 3;
-    let pointsData = svg.selectAll('.points').data(restaurants, d => d.id).enter();
-    pointsData.append('circle')
-        .join('.points')
-        .attr('class', 'points')
-        .style('fill', d => {
-            if (circles.length < 1) {
-                return 'orange';
-            }
-            const restaurantPoint = projection([d.longitude, d.latitude]);
-            const circle0Point = [circles[0].x, circles[0].y];
-            const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
-            const r0Squared = Math.pow(circles[0].r, 2);
-
-            if (circles.length < 2) {
-                return (distanceSquareOne < r0Squared) ? 'orange' : 'gray';
-            }
-
-            const circle1Point = [circles[1].x, circles[1].y];
-                const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
-                const r1Squared = Math.pow(circles[1].r, 2);
-                return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared)
-                    ? 'orange' : 'gray';
-        })
-        .attr('opacity', 1)
-        .attr('cx', d => projection([d.longitude, d.latitude])[0])
-        .attr('cy', d => projection([d.longitude, d.latitude])[1])
-        .attr('r', DOTSIZE)
-        .on('mouseover', d => {
-            svg.append('text')
-                .attr('x', _ => projection([d.longitude, d.latitude])[0] + 10)
-                .attr('y', _ => projection([d.longitude, d.latitude])[1] + 5)
-                .text(d.name);
-        })
-        .on('mouseout', _ => {
-            svg.selectAll('text').remove();
-        })
-
-    pointsData.exit().remove();
+    svg.selectAll('.points').data(restaurants, d => d.id).join(
+        enter => enter.append('circle')
+            .attr('id', d => d.id)
+            .attr('class', 'points')
+            .attr('opacity', 1)
+            .style('fill', colorPoints)
+            .attr('cx', d => projection([d.longitude, d.latitude])[0])
+            .attr('cy', d => projection([d.longitude, d.latitude])[1])
+            .attr('r', DOTSIZE)
+            .on('mouseover', d => {
+                svg.append('text')
+                    .attr('x', _ => projection([d.longitude, d.latitude])[0] + 10)
+                    .attr('y', _ => projection([d.longitude, d.latitude])[1] + 5)
+                    .text(d.name);
+            })
+            .on('mouseout', _ => {
+                svg.selectAll('text').remove();
+            }),
+        update => update.style('fill', colorPoints)
+    )
 }
 
 
@@ -157,17 +162,18 @@ function drawMap(svg) {
 
 
 function drawCircles(svg, circles) {
-    let circleData = svg.selectAll('circle').data(circles, d => d.id).enter();
-    circleData.append('circle')
-        .join('circle')
-        .attr('id', d => d.id)
-        .attr('fill', 'gray')
-        .attr('opacity', 0.5)
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
-        .attr("r", d => d.r)
-        .call(d3.drag().on('drag', updatePosition));
-    circleData.exit().remove();
+    svg.selectAll('circle').data(circles, d => d.id).join(
+        enter => enter.append('circle')
+            .join('circle')
+            .attr('id', d => d.id)
+            .attr('fill', 'gray')
+            .attr('opacity', 0.3)
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => d.r)
+            .call(d3.drag().on('drag', updatePosition)),
+        update => update.attr("r", d => d.r)
+    )
 }
 
 
