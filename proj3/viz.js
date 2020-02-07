@@ -103,7 +103,7 @@ function squaredDistanceBetween(a, b) {
 
 function colorPoints(d) {
     if (circles.length < 1) {
-        return 'darkgreen';
+        return 'orange';
     }
     const restaurantPoint = projection([d.longitude, d.latitude]);
     const circle0Point = [circles[0].x, circles[0].y];
@@ -111,14 +111,14 @@ function colorPoints(d) {
     const r0Squared = Math.pow(circles[0].r, 2);
 
     if (circles.length < 2) {
-        return (distanceSquareOne < r0Squared) ? 'darkgreen' : 'silver';
+        return (distanceSquareOne < r0Squared) ? 'orange' : 'gray';
     }
 
     const circle1Point = [circles[1].x, circles[1].y];
         const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
         const r1Squared = Math.pow(circles[1].r, 2);
         return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared)
-            ? 'darkgreen' : 'silver';
+            ? 'orange' : 'gray';
 }
 
 
@@ -126,7 +126,7 @@ function drawCircles() {
     svg.selectAll('circle').data(circles, d => d.id).join(
         enter => enter.append('circle')
             .attr('id', d => d.id)
-            .attr('fill', 'rosybrown')
+            .attr('fill', 'gray')
             .attr('opacity', 0.3)
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
@@ -143,9 +143,7 @@ function drawCircles() {
 
 
 function drawPoints() {
-    const restaurantInfo = [document.getElementById("restaurantName"), document.getElementById("restaurantGrade"), 
-        document.getElementById("restaurantScore"), document.getElementById("restaurantAddress")]
-    const DOTSIZE = 3.5;
+    const DOTSIZE = 3;
     let filteredData = restaurantData;
 
     if (!(passCheckbox.checked && failCheckbox.checked)) {
@@ -165,7 +163,7 @@ function drawPoints() {
     svg.selectAll('.points').data(filteredData, d => d.id).join(
         enter => enter.append('circle')
             .attr('class', 'points')
-            .attr('opacity', 0.8)
+            .attr('opacity', 1)
             .style('fill', colorPoints)
             .attr('cx', d => projection([d.longitude, d.latitude])[0])
             .attr('cy', d => projection([d.longitude, d.latitude])[1])
@@ -179,14 +177,9 @@ function drawPoints() {
             .on('mouseout', _ => {
                 svg.selectAll('text').remove();
             })
-            .on('click', function(d) {
+            .on('click', function() {
                 // Needs to be a function to have access to "this".
-                console.log("HERE");
                 d3.select(this).style("fill", 'blue');
-                restaurantInfo[0].innerHTML = d.name;
-                restaurantInfo[1].innerHTML = d.grade;
-                restaurantInfo[2].innerHTML = d.score;
-                restaurantInfo[3].innerHTML = d.address;
             }),
         update => update.style('fill', colorPoints)
     );
