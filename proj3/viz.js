@@ -12,13 +12,11 @@ const projection = drawMap(svg);
 let restaurantData;
 let circles = [];
 
+const passCheckbox = document.getElementById("passCheckbox");
+const failCheckbox = document.getElementById("failCheckbox");
+const searchBar = document.getElementById("searchBar");
 
 function main() {
-    const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
-    const textValues = [document.getElementById("valueA"), document.getElementById("valueB")];
-    textValues[0].innerHTML = sliders[0].value;
-    textValues[1].innerHTML = sliders[1].value;
-
     d3.csv('new_restaurant.csv', d => {
         // parse rows, +symbol means to treat data as numbers
         return {
@@ -32,13 +30,18 @@ function main() {
         };
     }).then(data => {
         restaurantData = data;
+        registerCallbacks();
         drawPoints();
-        registerCallbacks(sliders, textValues);
     });
 }
 
 
-function registerCallbacks(sliders, textValues) {
+function registerCallbacks() {
+    const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
+    const textValues = [document.getElementById("valueA"), document.getElementById("valueB")];
+    textValues[0].innerHTML = sliders[0].value;
+    textValues[1].innerHTML = sliders[1].value;
+
     svg.on('click', function() {
         if (circles.length < MAX_CIRCLES) {
             const [newX, newY] = d3.mouse(this);
@@ -51,7 +54,19 @@ function registerCallbacks(sliders, textValues) {
             drawCircles();
             drawPoints();
         }
-    })
+    });
+
+    searchBar.addEventListener('input', () => {
+        drawPoints();
+    });
+
+    passCheckbox.addEventListener('change', () => {
+        drawPoints();
+    });
+
+    failCheckbox.addEventListener('change', () => {
+        drawPoints();
+    });
 
     document.getElementById('resetBtn').addEventListener('click', () => {
         circles = [];
@@ -107,14 +122,6 @@ function colorPoints(d) {
 }
 
 
-function updatePosition(d) {
-    d3.select(this)
-        .attr('cx', d.x = d3.event.x)
-        .attr('cy', d.y = d3.event.y);
-    drawPoints();
-}
-
-
 function drawCircles() {
     svg.selectAll('circle').data(circles, d => d.id).join(
         enter => enter.append('circle')
@@ -124,15 +131,36 @@ function drawCircles() {
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .attr("r", d => d.r)
-            .call(d3.drag().on('drag', updatePosition)),
+            .call(d3.drag().on('drag', function(d) {
+                d3.select(this)
+                    .attr('cx', d.x = d3.event.x)
+                    .attr('cy', d.y = d3.event.y);
+                drawPoints();
+            })),
         update => update.attr("r", d => d.r)
-    )
+    );
 }
 
 
 function drawPoints() {
     const DOTSIZE = 3;
-    svg.selectAll('.points').data(restaurantData, d => d.id).join(
+    let filteredData = restaurantData;
+
+    if (!(passCheckbox.checked && failCheckbox.checked)) {
+        filteredData = filteredData.filter(d =>
+            (passCheckbox.checked && d.grade === "Pass")
+            || (failCheckbox.checked && d.grade === "Not Available")
+        );
+    }
+
+    if (searchBar.value !== '') {
+        filteredData = filteredData.filter(d =>
+            d.name.toLowerCase().includes(searchBar.value.toLowerCase())
+            || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
+        );
+    }
+
+    svg.selectAll('.points').data(filteredData, d => d.id).join(
         enter => enter.append('circle')
             .attr('class', 'points')
             .attr('opacity', 1)
@@ -154,7 +182,7 @@ function drawPoints() {
                 d3.select(this).style("fill", 'blue');
             }),
         update => update.style('fill', colorPoints)
-    )
+    );
 }
 
 
@@ -164,22 +192,21 @@ function drawMap(svg) {
     const SCALE = 190000;
 
     // Set up projection that the map is using
-    const projection = d3.geoMercator()
-                        .center([-122.061578, 37.385532])
-                        .scale(SCALE)
-                        .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
     // This maps between <longitude, latitude> position to <x, y> pixel position on the map
     // projection is a function and it has an inverse:
     // projection([lon, lat]) returns [x, y]
     // projection.invert([x, y]) returns [lon, lat]
+    const projection = d3.geoMercator()
+                        .center([-122.061578, 37.385532])
+                        .scale(SCALE)
+                        .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
-    // Add SVG map at correct size
     svg.append('image')
         .attr('width', MAP_WIDTH)
         .attr('height', MAP_HEIGHT)
         .attr('xlink:href', 'map.svg');
 
-    return projection
+    return projection;
 }
 
 

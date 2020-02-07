@@ -3,6 +3,7 @@
 <head>
 	<link rel="stylesheet" href="css/home.css">
 	<link rel="stylesheet" href="css/slider.css">
+	<link rel="stylesheet" href="css/search.css">
 	<script src='https://d3js.org/d3.v5.min.js'></script>
 </head>
 
@@ -10,14 +11,28 @@
 	<div class="main">
 		<svg id='vis'></svg>
 		<nav id="sidebar">
-
 			<div class="slidecontainer">
 				<h1>Restaurant Data</h1>
+				<h3>Proximity Sliders</h3>
 				<p id="valueA"></p>
 				<input id="sliderA" class="slider" type="range" min="1" max="100" value="50">
 				<p id="valueB"></p>
 				<input id="sliderB" class="slider" type="range" min="1" max="100" value="50">
-				<button id="resetBtn">Reset Circles</button>
+				<h3>Health Inspection Filters</h3>
+				<label class="container">
+					Pass
+					<input id="passCheckbox" type="checkbox" checked="checked">
+					<span class="checkmark"></span>
+				</label>
+				<label class="container">
+					Fail
+					<input id="failCheckbox" type="checkbox" checked="checked">
+					<span class="checkmark"></span>
+				</label>
+				<h3>Search (Name or Address)</h3>
+				<input id="searchBar" type="text" placeholder="Search..." name="search">
+				<br>
+				<button id="resetBtn">Reset Proximity Circles</button>
 			</div>
 		</nav>
 	</div>
