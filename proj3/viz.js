@@ -1,20 +1,16 @@
 'use strict';
 
-const PLOT_WIDTH = 1000;
-const PLOT_HEIGHT = 800;
-const MAX_CIRCLES = 2;
-
-const svg = d3.select('#vis')
-            .attr('width', PLOT_WIDTH)
-            .attr('height', PLOT_HEIGHT);
-
+const svg = d3.select('#vis').attr('width', 1000).attr('height', 800);
 const projection = drawMap(svg);
 let restaurantData;
 let circles = [];
 
+const SLIDER_MESSAGES = ["Circle A Radius: ", "Circle B Radius: ", "Minimum Health Score: "]
 const passCheckbox = document.getElementById("passCheckbox");
 const failCheckbox = document.getElementById("failCheckbox");
 const searchBar = document.getElementById("searchBar");
+const scoreFilter = document.getElementById("scoreFilter");
+
 
 function main() {
     d3.csv('new_restaurant.csv', d => {
@@ -37,10 +33,12 @@ function main() {
 
 
 function registerCallbacks() {
+    const MAX_CIRCLES = 2;
     const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
     const textValues = [document.getElementById("valueA"), document.getElementById("valueB")];
-    textValues[0].innerHTML = sliders[0].value;
-    textValues[1].innerHTML = sliders[1].value;
+    for (let i = 0; i < sliders.length; i++) {
+        textValues[i].innerHTML = SLIDER_MESSAGES[i] + sliders[i].value;
+    }
 
     svg.on('click', function() {
         if (circles.length < MAX_CIRCLES) {
@@ -56,15 +54,22 @@ function registerCallbacks() {
         }
     });
 
-    searchBar.addEventListener('input', () => {
+    searchBar.addEventListener('input', drawPoints);
+    passCheckbox.addEventListener('change', drawPoints);
+    failCheckbox.addEventListener('change', drawPoints);
+
+    d3.select('#scoreFilter').on("input", () => {
+        document.getElementById("scoreValue").innerHTML = SLIDER_MESSAGES[2] + scoreFilter.value;
         drawPoints();
     });
 
-    passCheckbox.addEventListener('change', () => {
+    d3.select('#sliderA').on("input", () => {
+        updateCircle(sliders, textValues, 0);
         drawPoints();
     });
 
-    failCheckbox.addEventListener('change', () => {
+    d3.select('#sliderB').on("input", () => {
+        updateCircle(sliders, textValues, 1);
         drawPoints();
     });
 
@@ -73,22 +78,12 @@ function registerCallbacks() {
         drawCircles();
         drawPoints();
     });
-
-    d3.select('#sliderA').on("input", function() {
-        updateCircle(sliders, textValues, 0);
-        drawPoints();
-    });
-
-    d3.select('#sliderB').on("input", function() {
-        updateCircle(sliders, textValues, 1);
-        drawPoints();
-    });
 }
 
 
 function updateCircle(sliders, textValues, i) {
     const newRadius = parseInt(sliders[i].value);
-    textValues[i].innerHTML = newRadius;
+    textValues[i].innerHTML = SLIDER_MESSAGES[i] + newRadius;
     if (i < circles.length) {
         circles[i].r = parseInt(newRadius);
         svg.selectAll("#circle"+i).attr('r', newRadius);
@@ -115,10 +110,10 @@ function colorPoints(d) {
     }
 
     const circle1Point = [circles[1].x, circles[1].y];
-        const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
-        const r1Squared = Math.pow(circles[1].r, 2);
-        return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared)
-            ? 'orange' : 'gray';
+    const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
+    const r1Squared = Math.pow(circles[1].r, 2);
+    return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared)
+        ? 'orange' : 'gray';
 }
 
 
@@ -126,6 +121,7 @@ function drawCircles() {
     svg.selectAll('circle').data(circles, d => d.id).join(
         enter => enter.append('circle')
             .attr('id', d => d.id)
+            .attr('class', 'bigCircles')
             .attr('fill', 'gray')
             .attr('opacity', 0.3)
             .attr("cx", d => d.x)
@@ -143,10 +139,16 @@ function drawCircles() {
 
 
 function drawPoints() {
-    const restaurantInfo = [document.getElementById("restaurantName"), document.getElementById("restaurantGrade"), 
-        document.getElementById("restaurantScore"), document.getElementById("restaurantAddress")];
     const DOTSIZE = 3;
+    const restaurantInfo = document.getElementById("restaurantInfo");
     let filteredData = restaurantData;
+
+    if (searchBar.value !== '') {
+        filteredData = filteredData.filter(d =>
+            d.name.toLowerCase().includes(searchBar.value.toLowerCase())
+            || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
+        );
+    }
 
     if (!(passCheckbox.checked && failCheckbox.checked)) {
         filteredData = filteredData.filter(d =>
@@ -155,12 +157,9 @@ function drawPoints() {
         );
     }
 
-    if (searchBar.value !== '') {
-        filteredData = filteredData.filter(d =>
-            d.name.toLowerCase().includes(searchBar.value.toLowerCase())
-            || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
-        );
-    }
+    filteredData = filteredData.filter(d =>
+        isNaN(d.score) || d.score >= parseInt(scoreFilter.value)
+    );
 
     svg.selectAll('.points').data(filteredData, d => d.id).join(
         enter => enter.append('circle')
@@ -182,10 +181,12 @@ function drawPoints() {
             .on('click', function(d) {
                 // Needs to be a function to have access to "this".
                 d3.select(this).style("fill", 'blue');
-                restaurantInfo[0].innerHTML = "Name: " + d.name;
-                restaurantInfo[1].innerHTML = "Grade: " + d.grade;
-                restaurantInfo[2].innerHTML = "Score: " + d.score;
-                restaurantInfo[3].innerHTML = "Address: " + d.address;
+                restaurantInfo.innerHTML = [
+                    "Name: " + d.name,
+                    "Grade: " + d.grade,
+                    "Score: " + d.score,
+                    "Address: " + d.address
+                ].join('<br>');
             }),
         update => update.style('fill', colorPoints)
     );
