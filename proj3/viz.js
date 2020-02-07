@@ -143,6 +143,8 @@ function drawCircles() {
 
 
 function drawPoints() {
+    const restaurantInfo = [document.getElementById("restaurantName"), document.getElementById("restaurantGrade"), 
+        document.getElementById("restaurantScore"), document.getElementById("restaurantAddress")];
     const DOTSIZE = 3;
     let filteredData = restaurantData;
 
@@ -177,9 +179,13 @@ function drawPoints() {
             .on('mouseout', _ => {
                 svg.selectAll('text').remove();
             })
-            .on('click', function() {
+            .on('click', function(d) {
                 // Needs to be a function to have access to "this".
                 d3.select(this).style("fill", 'blue');
+                restaurantInfo[0].innerHTML = "Name: " + d.name;
+                restaurantInfo[1].innerHTML = "Grade: " + d.grade;
+                restaurantInfo[2].innerHTML = "Score: " + d.score;
+                restaurantInfo[3].innerHTML = "Address: " + d.address;
             }),
         update => update.style('fill', colorPoints)
     );

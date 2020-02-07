@@ -100,3 +100,11 @@
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
+
+/* Style current restaurant info text box */
+.currentRestaurant {
+  position: absolute;
+  left: 20px;
+  bottom: -150px;
+  color: darkgreen;
+}
