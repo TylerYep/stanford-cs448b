@@ -2,6 +2,7 @@
 
 <head>
 	<link rel="stylesheet" href="css/home.css">
+	<link rel="stylesheet" href="css/checkbox.css">
 	<link rel="stylesheet" href="css/slider.css">
 	<link rel="stylesheet" href="css/search.css">
 	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
@@ -13,11 +14,11 @@
 		<svg id='vis'></svg>
 		<nav id="sidebar">
 			<div class="slidecontainer">
-				<h1>Restaurant Data</h1>
-				<button id="resetBtn">Reset Proximity Circles</button>
-				<h2>Search (Name or Address)</h2>
+				<h1>South Bay Restaurant Data</h1>
+				<h4>By Tyler Yep & Joy Yuzuriha</h4>
+				<h2>Search (Name / Address)</h2>
 				<input id="searchBar" type="text" placeholder="Search..." name="search">
-				<h2>Proximity Sliders</h2>
+				<h2>Proximity</h2>
 				<p id="valueA"></p>
 				<input id="sliderA" class="slider" type="range" min="10" max="300" value="150">
 				<p id="valueB"></p>
@@ -33,8 +34,9 @@
 					<input id="failCheckbox" type="checkbox" checked="checked">
 					<span class="checkmark"></span>
 				</label>
-				<p id="scoreValue">Minimum Health Score: 0</p>
-				<input id="scoreFilter" class="slider" type="range" min="0" max="100" value="0">
+				<p id="scoreValue">Health Score Threshold: 32</p>
+				<input id="scoreFilter" class="slider" type="range" min="32" max="100" value="32">
+				<button id="resetBtn">Reset Proximity Circles</button>
 				<br>
 				<div class="currentRestaurant" style="position: absolute; top: 80%;">
 					<p id="restaurantInfo"></p>

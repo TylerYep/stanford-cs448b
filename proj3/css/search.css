@@ -1,6 +1,6 @@
 .slidecontainer input[type="text"] {
   padding: 6px;
-  margin-top: 8px;
   font-size: 17px;
   border: none;
+  width: 300px;
 }
