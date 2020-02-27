@@ -1,0 +1,30 @@
+.visualizer {
+    border: 15px black solid;
+}
+
+.visualizer img {
+    border-radius: 0;
+}
+
+.visualizer-white img {
+    border-radius: 0;
+}
+
+.main.style2 ul.major-icons li .icon::after {
+    background: #ffffff;
+    content: '';
+    height: 100px;
+    left: 50%;
+    position: absolute;
+    top: 100%;
+    width: 1px;
+}
+
+.matrix {
+    max-width: 200px;
+}
+
+.score {
+    max-width: 800px;
+    margin: auto;
+}
