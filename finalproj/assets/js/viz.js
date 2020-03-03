@@ -225,7 +225,7 @@ function drawMap(svg) {
     svg.append("image")
         .attr("width", MAP_WIDTH)
         .attr("height", MAP_HEIGHT)
-        .attr("xlink:href", "data/map.svg");
+        .attr("xlink:href", "images/map.svg");
     return projection;
 }
 
