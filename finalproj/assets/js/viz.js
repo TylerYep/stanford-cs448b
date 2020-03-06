@@ -1,9 +1,13 @@
+import { TOKEN } from './const.js'
+
 const svg = d3.select("#vis").attr("width", 1000).attr("height", 800);
 const projection = drawMap(svg);
 let restaurantData;
-let circles = [];
+let pathPoints = [];
 
-const ON_COLOR = "darkorange";
+const TOKEN = 'pk.eyJ1IjoidHlsZXJ5ZXAiLCJhIjoiY2s3ZnQ5cGZmMDZmMTNvcGd1amFrOGV3ciJ9.32mOM4QHLL9QKl0TpUZvZw'
+const DEFAULT_COLOR = "darkorange";
+const ON_COLOR = "blue";
 const OFF_COLOR = "gray";
 const searchBar = document.getElementById("searchBar");
 const scoreFilter = document.getElementById("scoreFilter");
@@ -21,14 +25,23 @@ function main() {
             longitude: +d.Start_Lng,
         };
     }).then(data => {
-        restaurantData = data;
-        searchBar.addEventListener("input", drawPoints);
-        const nodesById = drawPoints();
-        drawLines(nodesById);
+        restaurantData = data.slice(0, 1000);
+        registerCallbacks()
+        drawPoints();
+        // drawLines(nodesById);
     });
 }
 
+function registerCallbacks() {
+    searchBar.addEventListener("input", drawPoints);
 
+    document.getElementById("resetBtn").addEventListener("click", () => {
+        pathPoints = [];
+        drawPoints();
+        svg.selectAll(".lines").remove();
+    });
+}
+/*
 function drawLines(nodesById) {
     d3.csv("data/graph_bay_area_knn_10converted.csv", d => {
         // parse rows, +symbol means to treat data as numbers
@@ -50,10 +63,35 @@ function drawLines(nodesById) {
         });
     });
 }
+*/
+
+async function drawLines() {
+    console.log(pathPoints);
+    const url = "https://api.mapbox.com/directions/v5/mapbox/cycling/"
+                + `${pathPoints[0].longitude},${pathPoints[0].latitude};`
+                + `${pathPoints[1].longitude},${pathPoints[1].latitude}`
+                + `?geometries=geojson&access_token=${TOKEN}`;
+    console.log(url);
+    let response = await fetch(url);
+    let routeData = await response.json();
+    console.log(routeData);
+    let points = routeData.routes[0].geometry.coordinates;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p1 = projection(points[i]);
+        const p2 = projection(points[i + 1]);
+        svg.append("line")
+            .attr("class", "lines")
+            .attr("x1", p1[0])
+            .attr("y1", p1[1])
+            .attr("x2", p2[0])
+            .attr("y2", p2[1])
+            .style("stroke", "steelblue")
+    }
+}
 
 
 function colorPoints(d) {
-    return ON_COLOR;
+    return DEFAULT_COLOR;
     // const restaurantPoint = projection([d.longitude, d.latitude]);
     // const circle0Point = [circles[0].x, circles[0].y];
     // const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
@@ -73,18 +111,14 @@ function drawPoints() {
     const restaurantInfo = document.getElementById("restaurantInfo");
     let filteredData = restaurantData;
 
-    // if (searchBar.value !== "") {
-    //     filteredData = filteredData.filter(d =>
-    //         d.name.toLowerCase().includes(searchBar.value.toLowerCase())
-    //         || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
-    //     );
-    // }
+    if (searchBar.value !== "") {
+        filteredData = filteredData.filter(d =>
+            d.name.toLowerCase().includes(searchBar.value.toLowerCase())
+            || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
+        );
+    }
 
-    // filteredData = filteredData.filter(d =>
-    //     isNaN(d.score) || d.score >= parseInt(scoreFilter.value)
-    // );
-
-    const points = svg.selectAll(".points").data(filteredData, d => d.id).join(
+    svg.selectAll(".points").data(filteredData, d => d.id).join(
         enter => enter.append("circle")
             .attr("class", "points")
             .attr("opacity", 0.75)
@@ -107,14 +141,18 @@ function drawPoints() {
             .on("mouseout", _ => {
                 svg.selectAll(".restaurantLabel").remove();
             })
-            .on("click", function(_) {
+            .on("click", function(d) {
                 // Needs to be a function to have access to "this".
-                d3.select(this).style("fill", ON_COLOR);
+                if (pathPoints.length < 2) {
+                    pathPoints.push(d);
+                    d3.select(this).style("fill", ON_COLOR);
+                    if (pathPoints.length == 2) {
+                        drawLines();
+                    }
+                }
             }),
         update => update.style("fill", colorPoints)
     );
-
-    return d3.map(points.data(), d => d.id);
 }
 
 
