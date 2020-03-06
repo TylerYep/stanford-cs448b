@@ -10,18 +10,18 @@
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 		<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
 		<script src='https://d3js.org/d3.v5.min.js'></script>
-		<link rel="stylesheet" href="assets/css/home.css">
+		<!-- <link rel="stylesheet" href="assets/css/home.css"> -->
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/extra.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<!-- <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript> -->
 	</head>
 	<body class="is-preload">
 
 		<head>
-			<link rel="stylesheet" href="css/home.css">
+			<!-- <link rel="stylesheet" href="css/home.css">
 			<link rel="stylesheet" href="css/checkbox.css">
 			<link rel="stylesheet" href="css/slider.css">
-			<link rel="stylesheet" href="css/search.css">
+			<link rel="stylesheet" href="css/search.css"> -->
 			<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
 			<script src='https://d3js.org/d3.v5.min.js'></script>
 		</head>
@@ -31,30 +31,13 @@
 				<svg id='vis'></svg>
 				<nav id="sidebar">
 					<div class="slidecontainer">
-						<h1>South Bay Restaurant Data</h1>
+						<h1>South Bay Accident Data</h1>
 						<h4>By Tyler Yep & Joy Yuzuriha</h4>
 						<h2>Search (Name / Address)</h2>
 						<input id="searchBar" type="text" placeholder="Search..." name="search">
 						<h2>Proximity</h2>
-						<p id="valueA"></p>
-						<input id="sliderA" class="slider" type="range" min="10" max="300" value="150">
-						<p id="valueB"></p>
-						<input id="sliderB" class="slider" type="range" min="10" max="300" value="150">
-						<h2>Health Inspection Filters</h3>
-						<label class="container">
-							Pass
-							<input id="passCheckbox" type="checkbox" checked="checked">
-							<span class="checkmark"></span>
-						</label>
-						<label class="container">
-							Not-Available
-							<input id="failCheckbox" type="checkbox" checked="checked">
-							<span class="checkmark"></span>
-						</label>
-						<p id="scoreValue">Health Score Threshold: 32</p>
+						<p id="scoreValue">Severity Threshold: 1</p>
 						<input id="scoreFilter" class="slider" type="range" min="32" max="100" value="32">
-						<button id="resetBtn">Reset Proximity Circles</button>
-						<br>
 						<div class="currentRestaurant" style="position: absolute; top: 80%;">
 							<p id="restaurantInfo"></p>
 						</div>

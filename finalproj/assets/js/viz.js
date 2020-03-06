@@ -3,152 +3,68 @@ const projection = drawMap(svg);
 let restaurantData;
 let circles = [];
 
-const MAX_CIRCLES = 2;
 const ON_COLOR = "darkorange";
 const OFF_COLOR = "gray";
-const SLIDER_MESSAGES = ["Circle A Radius: ", "Circle B Radius: ", "Minimum Health Score: "]
-const passCheckbox = document.getElementById("passCheckbox");
-const failCheckbox = document.getElementById("failCheckbox");
 const searchBar = document.getElementById("searchBar");
 const scoreFilter = document.getElementById("scoreFilter");
 
 
 function main() {
-    d3.csv("data/new_restaurant.csv", d => {
+    d3.csv("data/accidents_bay_area.csv", d => {
         // parse rows, +symbol means to treat data as numbers
         return {
-            id: +d.id,
-            name: d.name,
-            address: d.address,
-            grade: d.grade,
-            score: +d.score,
-            latitude: +d.latitude,
-            longitude: +d.longitude,
+            id: d.ID,
+            name: d.Description,
+            address: d.Street,
+            score: +d.Severity,
+            latitude: +d.Start_Lat,
+            longitude: +d.Start_Lng,
         };
     }).then(data => {
         restaurantData = data;
-        registerCallbacks();
-        drawPoints();
+        searchBar.addEventListener("input", drawPoints);
+        const nodesById = drawPoints();
+        drawLines(nodesById);
     });
 }
 
 
-function registerCallbacks() {
-    const sliders = [document.getElementById("sliderA"), document.getElementById("sliderB")];
-    const textValues = [document.getElementById("valueA"), document.getElementById("valueB")];
-    for (let i = 0; i < sliders.length; i++) {
-        textValues[i].innerHTML = SLIDER_MESSAGES[i] + (sliders[i].value / 50) + ' miles';
-    }
-
-    svg.on("click", function() {
-        if (circles.length < MAX_CIRCLES) {
-            const [newX, newY] = d3.mouse(this);
-            circles.push({
-                id: "circle" + circles.length,
-                x: newX,
-                y: newY,
-                r: parseInt(sliders[circles.length].value)
-            });
-            drawCircles();
-            drawPoints();
-        }
+function drawLines(nodesById) {
+    d3.csv("data/graph_bay_area_knn_10converted.csv", d => {
+        // parse rows, +symbol means to treat data as numbers
+        return {
+            p1: d.p1,
+            p2: d.p2,
+            weight: +d.weight
+        };
+    }).then(edgeData => {
+        edgeData.forEach(d => {
+            const p1 = projection([nodesById.get(d.p1).longitude, nodesById.get(d.p1).latitude]);
+            const p2 = projection([nodesById.get(d.p2).longitude, nodesById.get(d.p2).latitude]);
+            svg.append("line")
+                .attr("x1", p1[0])
+                .attr("y1", p1[1])
+                .attr("x2", p2[0])
+                .attr("y2", p2[1])
+                .style("stroke", "steelblue")
+        });
     });
-
-    searchBar.addEventListener("input", drawPoints);
-    passCheckbox.addEventListener("change", drawPoints);
-    failCheckbox.addEventListener("change", drawPoints);
-
-    d3.select("#scoreFilter").on("input", () => {
-        document.getElementById("scoreValue").innerHTML = SLIDER_MESSAGES[2] + scoreFilter.value;
-        drawPoints();
-    });
-
-    d3.select("#sliderA").on("input", () => {
-        updateCircle(sliders, textValues, 0);
-        drawPoints();
-    });
-
-    d3.select("#sliderB").on("input", () => {
-        updateCircle(sliders, textValues, 1);
-        drawPoints();
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-        circles = [];
-        drawCircles();
-        drawPoints();
-        for (let i = 0; i < MAX_CIRCLES; i++) {
-            svg.select(".labelcircle" + i).remove();
-        }
-    });
-}
-
-
-function updateCircle(sliders, textValues, i) {
-    const newRadius = parseInt(sliders[i].value);
-    textValues[i].innerHTML = SLIDER_MESSAGES[i] + (newRadius / 50) + ' miles';
-    if (i < circles.length) {
-        circles[i].r = parseInt(newRadius);
-        svg.selectAll("#circle" + i).attr("r", newRadius);
-    }
-}
-
-
-function squaredDistanceBetween(a, b) {
-    return Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2);
 }
 
 
 function colorPoints(d) {
-    if (circles.length < 1) return ON_COLOR;
+    return ON_COLOR;
+    // const restaurantPoint = projection([d.longitude, d.latitude]);
+    // const circle0Point = [circles[0].x, circles[0].y];
+    // const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
+    // const r0Squared = Math.pow(circles[0].r, 2);
 
-    const restaurantPoint = projection([d.longitude, d.latitude]);
-    const circle0Point = [circles[0].x, circles[0].y];
-    const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
-    const r0Squared = Math.pow(circles[0].r, 2);
+    // if (circles.length < 2) return (distanceSquareOne < r0Squared) ? ON_COLOR : OFF_COLOR;
 
-    if (circles.length < 2) return (distanceSquareOne < r0Squared) ? ON_COLOR : OFF_COLOR;
-
-    const circle1Point = [circles[1].x, circles[1].y];
-    const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
-    const r1Squared = Math.pow(circles[1].r, 2);
-    return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared) ? ON_COLOR : OFF_COLOR;
-}
-
-
-function dragCallback(d) {
-    drawPoints();
-    d3.select("#" + d.id)
-        .attr("cx", d.x = d3.event.x)
-        .attr("cy", d.y = d3.event.y);
-    d3.select(".label" + d.id)
-        .attr("x", d => d.x)
-        .attr("y", d => d.y);
-}
-
-
-function drawCircles() {
-    svg.selectAll("circle").data(circles, d => d.id).join(
-        enter => {
-            enter.append("circle")
-                .attr("id", d => d.id)
-                .attr("class", "bigCircles")
-                .attr("fill", "gray")
-                .attr("opacity", 0.3)
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y)
-                .attr("r", d => d.r)
-                .call(d3.drag().on("drag", dragCallback));
-            enter.append("text")
-                .attr("class", d => "label" + d.id)
-                .style("text-anchor", "middle")
-                .attr("x", d => d.x)
-                .attr("y", d => d.y)
-                .text(d => (d.id === "circle0") ? "A" : "B")
-                .call(d3.drag().on("drag", dragCallback));
-        },
-        update => update.attr("r", d => d.r)
-    );
+    // const circle1Point = [circles[1].x, circles[1].y];
+    // const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
+    // const r1Squared = Math.pow(circles[1].r, 2);
+    // return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared) ? ON_COLOR : OFF_COLOR;
 }
 
 
@@ -157,25 +73,18 @@ function drawPoints() {
     const restaurantInfo = document.getElementById("restaurantInfo");
     let filteredData = restaurantData;
 
-    if (searchBar.value !== "") {
-        filteredData = filteredData.filter(d =>
-            d.name.toLowerCase().includes(searchBar.value.toLowerCase())
-            || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
-        );
-    }
+    // if (searchBar.value !== "") {
+    //     filteredData = filteredData.filter(d =>
+    //         d.name.toLowerCase().includes(searchBar.value.toLowerCase())
+    //         || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
+    //     );
+    // }
 
-    if (!(passCheckbox.checked && failCheckbox.checked)) {
-        filteredData = filteredData.filter(d =>
-            (passCheckbox.checked && d.grade === "Pass")
-            || (failCheckbox.checked && d.grade !== "Pass")
-        );
-    }
+    // filteredData = filteredData.filter(d =>
+    //     isNaN(d.score) || d.score >= parseInt(scoreFilter.value)
+    // );
 
-    filteredData = filteredData.filter(d =>
-        isNaN(d.score) || d.score >= parseInt(scoreFilter.value)
-    );
-
-    svg.selectAll(".points").data(filteredData, d => d.id).join(
+    const points = svg.selectAll(".points").data(filteredData, d => d.id).join(
         enter => enter.append("circle")
             .attr("class", "points")
             .attr("opacity", 0.75)
@@ -191,7 +100,6 @@ function drawPoints() {
                     .text(d.name);
                 restaurantInfo.innerHTML = [
                     "<b>Name: </b>" + d.name,
-                    "<b>Grade: </b>" + d.grade,
                     "<b>Score: </b>" + d.score,
                     "<b>Address: </b>" + d.address
                 ].join("<br>");
@@ -205,6 +113,8 @@ function drawPoints() {
             }),
         update => update.style("fill", colorPoints)
     );
+
+    return d3.map(points.data(), d => d.id);
 }
 
 
