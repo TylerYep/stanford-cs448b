@@ -1,5 +1,3 @@
-import { TOKEN } from './const.js'
-
 const svg = d3.select("#vis").attr("width", 1000).attr("height", 800);
 const projection = drawMap(svg);
 let restaurantData;
@@ -25,7 +23,7 @@ function main() {
             longitude: +d.Start_Lng,
         };
     }).then(data => {
-        restaurantData = data.slice(0, 1000);
+        restaurantData = data;
         registerCallbacks()
         drawPoints();
         // drawLines(nodesById);
@@ -41,29 +39,7 @@ function registerCallbacks() {
         svg.selectAll(".lines").remove();
     });
 }
-/*
-function drawLines(nodesById) {
-    d3.csv("data/graph_bay_area_knn_10converted.csv", d => {
-        // parse rows, +symbol means to treat data as numbers
-        return {
-            p1: d.p1,
-            p2: d.p2,
-            weight: +d.weight
-        };
-    }).then(edgeData => {
-        edgeData.forEach(d => {
-            const p1 = projection([nodesById.get(d.p1).longitude, nodesById.get(d.p1).latitude]);
-            const p2 = projection([nodesById.get(d.p2).longitude, nodesById.get(d.p2).latitude]);
-            svg.append("line")
-                .attr("x1", p1[0])
-                .attr("y1", p1[1])
-                .attr("x2", p2[0])
-                .attr("y2", p2[1])
-                .style("stroke", "steelblue")
-        });
-    });
-}
-*/
+
 
 async function drawLines() {
     console.log(pathPoints);
