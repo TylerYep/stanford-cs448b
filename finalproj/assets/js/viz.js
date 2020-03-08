@@ -2,6 +2,7 @@ const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 750;
 const HISTO_WIDTH = MAP_WIDTH;
 const HISTO_HEIGHT = MAP_HEIGHT;
+const COLORS = ["brown", "red", "orange", "yellow", "green", "skyblue", "teal", "blue", "indigo", "violet", "black"]
 const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
     .attr("height", MAP_HEIGHT);
@@ -54,7 +55,7 @@ function registerCallbacks() {
 
 function drawHistogram(data) {
     // set the dimensions and margins of the graph
-    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    var margin = {top: 20, right: 20, bottom: 30, left: 0},
         width = HISTO_WIDTH - margin.left - margin.right,
         height = HISTO_HEIGHT - margin.top - margin.bottom;
 
@@ -74,13 +75,12 @@ function drawHistogram(data) {
     // Scale the range of the data in the domains
     x.domain(data.map(d => d.routeSegment));
     y.domain([0, d3.max(data, d => d.neabyAccidents)]);
-    console.log(x)
 
     // append the rectangles for the bar chart
     histogramSvg.selectAll(".bar")
         .data(data)
         .enter().append("rect")
-        .style('fill', 'steelblue')
+        .style('fill', d => d.segmentColor)
         .attr("x", d => x(d.routeSegment))
         .attr("width", x.bandwidth())
         .attr("y", d => y(d.neabyAccidents))
@@ -110,10 +110,12 @@ async function drawLines() {
     for (let i = 0; i < points.length - 1; i++) {
         const p1 = projection(points[i]);
         const p2 = projection(points[i + 1]);
+        const segColor = COLORS[i % COLORS.length];
         const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
         const newRow = {
             routeSegment: "hello"+i,
-            neabyAccidents: nearbyAccidentCount
+            neabyAccidents: nearbyAccidentCount,
+            segmentColor: segColor
         }
         histogramData.push(newRow);
         svg.append("line")
@@ -123,7 +125,7 @@ async function drawLines() {
             .attr("y1", p1[1])
             .attr("x2", p2[0])
             .attr("y2", p2[1])
-            .style("stroke", "steelblue")
+            .style("stroke", segColor)
     }
     console.log(histogramData);
     drawHistogram(histogramData);
