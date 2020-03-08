@@ -10,44 +10,11 @@
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 		<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
 		<script src='https://d3js.org/d3.v5.min.js'></script>
-		<!-- <link rel="stylesheet" href="assets/css/home.css"> -->
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/extra.css" />
 		<!-- <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript> -->
 	</head>
 	<body class="is-preload">
-
-		<head>
-			<link rel="stylesheet" href="css/home.css">
-			<link rel="stylesheet" href="css/checkbox.css">
-			<link rel="stylesheet" href="css/slider.css">
-			<link rel="stylesheet" href="css/search.css">
-			<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
-			<script src='https://d3js.org/d3.v5.min.js'></script>
-		</head>
-
-		<body>
-			<div class="main">
-				<svg id='vis'></svg>
-				<nav id="sidebar">
-					<div class="slidecontainer">
-						<h1>South Bay Accident Data</h1>
-						<h4>By Tyler Yep & Joy Yuzuriha</h4>
-						<h2>Search (Name / Address)</h2>
-						<input id="searchBar" type="text" placeholder="Search..." name="search">
-						<h2>Proximity</h2>
-						<p id="scoreValue">Severity Threshold: 1</p>
-						<input id="scoreFilter" class="slider" type="range" min="32" max="100" value="32">
-						<button id="resetBtn">Reset Proximity Circles</button>
-						<div class="currentRestaurant" style="position: absolute; top: 80%;">
-						<p id="restaurantInfo"></p>
-						</div>
-					</div>
-				</nav>
-			</div>
-			<script src='assets/js/viz.js'></script>
-		</body>
-
 		<!-- Header -->
 		<section id="header">
 			<div class="inner">
@@ -154,149 +121,32 @@
 			</div>
 		</section>
 
-		<!-- 4. 
-		<section id="four" class="main style1">
-			<div class="container">
-				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
-						<header class="major">
-							<h2>Grammars</h2>
-						</header>
-						<p>Generating data samples using a grammar is a novel technique in zero-shot learning, which allows us to use human knowledge to encode labels into specific classes of examples. The goal of our grammar is to match the distribution of the true distribution of student submissions.</p>
-					</div>
-					<div class="col-6 col-12-medium">
-						<h4>Grammar Accuracy</h4>
-						<div class="table-wrapper">
-							<table class="alt">
-								<thead>
-									<tr>
-										<th>Problem</th>
-										<th>Completeness-%</th>
-										<th>L2 Distance</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>1</td>
-										<td>82.3%</td>
-										<td>101391</td>
-									</tr>
-									<tr>
-										<td>2</td>
-										<td>98.9%</td>
-										<td>1895</td>
-									</tr>
-									<tr>
-										<td>3</td>
-										<td>52.5%</td>
-										<td>161342</td>
-									</tr>
-									<tr>
-										<td>4</td>
-										<td>56.8%</td>
-										<td>181267</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<section class="main style2">
-			<div class="container">
-				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
-						<header class="major">
-							<h2>Generating + Verifying Grammars</h2>
-						</header>
-						<p>In our third assignment, we explored how to use Chris's idea-to-text engine with our grammars to randomly generate student code with rubric labels.</p>
-						<p>However, since we were going to be generating our data from a grammar for each of the problems we were interested in, we needed some way of evaluating whether our grammars were complete enough, and sufficiently approximated the true data's distribution.</p>
-						<p>To do so, we wrote grammars for problems 1, 2, 3, and 4. We then evaluated our grammars using completeness as a primary metric, and then L2 distance as a secondary metric. While we did not get as high accuracy on our grammars for problems 3 or 4 compared to problem 1, our grammars still performed well given the Zipf distribution of the data.</p>
-					</div>
-					<div class="col-6 col-12-medium">
-						<ul class="major-icons">
-							<li><span class="icon solid style1 major"><b>For(20, 200, 20)</b></span></li>
-							<li><span class="icon solid style2 major"><b>Repeat(3)</b></span></li>
-							<li><span class="icon solid style3 major"><b>Repeat(3)</b></span></li>
-							<li><span class="icon solid style4 major"><b>Move(50)</b></span></li>
-							<li><span class="icon solid style5 major"><b>Move(50)</b></span></li>
-							<li><span class="icon solid style6 major"><b>TurnLeft(120)</b></span></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</section> -->
 
 		<section class="main style1">
 			<div class="container">
 				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
+					<div class="col-12 col-12-medium">
 						<header class="major">
 							<h2>Bay Area Map Visualization</h2>
 						</header>
-						<p>To estimate student ability, we used the following process:</p>
-						<ul>
-							<li>Create grammars for multiple Code.org problems.</li>
-							<li>Validate our grammars by comparing them to the sample data.</li>
-							<li>Train an LSTM using each grammar.</li>
-							<li>Collect rubric predictions for all student submissions.</li>
-							<li>Identify features of evolving rubric items.</li>
-							<li>Report a score categorizing a student's learning and compare different students.</li>
-						</ul>
 					</div>
-					<div class="col-6 col-12-medium">
-						<h4>LSTM Train/Test Results</h4>
-						<div class="table-wrapper">
-							<table class="alt">
-								<thead>
-									<tr>
-										<th>Prob</th>
-										<th>Loss</th>
-										<th>Train Acc</th>
-										<th>Train F1</th>
-										<th>Test Acc</th>
-										<th>Test F1</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>1</td>
-										<td>0.0526</td>
-										<td>97.43%</td>
-										<td>0.9497</td>
-										<td>97.42%</td>
-										<td>0.9500</td>
-									</tr>
-									<tr>
-										<td>2</td>
-										<td>0.0006</td>
-										<td>100.0%</td>
-										<td>1.0000</td>
-										<td>100.0%</td>
-										<td>1.0000</td>
-									</tr>
-									<tr>
-										<td>3</td>
-										<td>0.0896</td>
-										<td>96.48%</td>
-										<td>0.8456</td>
-										<td>96.55%</td>
-										<td>0.8473</td>
-									</tr>
-									<tr>
-										<td>4</td>
-										<td>0.1173</td>
-										<td>94.79%</td>
-										<td>0.8424</td>
-										<td>94.94%</td>
-										<td>0.8491</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
+					<div class="col-4 col-12-medium">
+						<input id="searchBar" type="text" placeholder="Search (Name / Address)" name="search">
 					</div>
+					<div class="col-4 col-12-medium">
+						<p id="scoreValue">Severity Threshold: 1</p>
+						<input id="scoreFilter" class="slider" type="range" min="1" max="4" value="1">
+					</div>
+					<div class="col-4 col-12-medium">
+						<button id="resetBtn">Reset Directions</button>
+					</div>
+
+					<div id="currentRestaurant" style="position: absolute; top: 80%;">
+						<p id="restaurantInfo"></p>
+					</div>
+					<svg id='vis'></svg>
+					<svg id='histogramVis'></svg>
+
 				</div>
 			</div>
 		</section>
@@ -510,7 +360,7 @@
 				<li><a href="#" class="icon solid alt fa-envelope"><span class="label">Email</span></a></li>
 			</ul>
 			<ul class="copyright">
-				<li>&copy; Tyler Yep, Jesse Doan</li>
+				<li>&copy; Tyler Yep, Joy Yuzuriha</li>
 				<li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
 			</ul>
 		</section>
@@ -526,5 +376,6 @@
 		<script src="assets/js/zenscroll-min.js"></script>
 		<script src="assets/js/util.js"></script>
 		<script src="assets/js/main.js"></script>
+		<script src='assets/js/viz.js'></script>
 	</body>
 </html>

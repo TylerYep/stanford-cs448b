@@ -7,6 +7,39 @@ import csv
 from tqdm import tqdm
 
 
+def remove_duplicates():
+    first_line = True
+    seen_coords = {}
+    with open('data/accidents_bay_area.csv') as f:
+        for line in f:
+            if first_line:
+                first_line = False
+            else:
+                split_line = line.split(',')
+                latitude = float(split_line[6])
+                longitude = float(split_line[7])
+                str_form = str(latitude) + ',' + str(longitude)
+                if str_form not in seen_coords:
+                    seen_coords[str_form] = 0
+                seen_coords[str_form] += 1
+
+    first_line = True
+    with open('data/accidents_bay_area.csv') as f:
+        with open('data/accidents_bay_area_no_duplicates.csv', 'w') as new_f:
+            for line in f:
+                if first_line:
+                    new_f.write(line[:-1] + ',Count\n')
+                    first_line = False
+                else:
+                    split_line = line.split(',')
+                    latitude = float(split_line[6])
+                    longitude = float(split_line[7])
+                    str_form = str(latitude) + ',' + str(longitude)
+                    if str_form in seen_coords:
+                        new_f.write(line[:-1] + ',' + str(seen_coords[str_form]) + '\n')
+                        del seen_coords[str_form]
+
+
 def get_ca_entries():
     first_line = True
     with open('data/US_Accidents_Dec19.csv') as f:
@@ -100,6 +133,7 @@ def convert_graph_to_csv(filename):
 
 
 if __name__ == '__main__':
-    create_graph()
+    # create_graph()
+    remove_duplicates()
     # convert_graph_to_csv('data/graph_bay_area_knn_5.csv')
     # get_bay_area_locations()

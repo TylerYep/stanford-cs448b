@@ -1,4 +1,10 @@
-const svg = d3.select("#vis").attr("width", 1000).attr("height", 800);
+const MAP_WIDTH = 1000;
+const MAP_HEIGHT = 750;
+const HISTO_WIDTH = MAP_WIDTH;
+const HISTO_HEIGHT = MAP_HEIGHT;
+const svg = d3.select("#vis")
+    .attr("width", MAP_WIDTH)
+    .attr("height", MAP_HEIGHT);
 const projection = drawMap(svg);
 let restaurantData;
 let pathPoints = [];
@@ -12,26 +18,31 @@ const scoreFilter = document.getElementById("scoreFilter");
 
 
 function main() {
-    d3.csv("data/accidents_bay_area.csv", d => {
+    d3.csv("data/accidents_bay_area_no_duplicates.csv", d => {
         // parse rows, +symbol means to treat data as numbers
         return {
             id: d.ID,
             name: d.Description,
             address: d.Street,
-            score: +d.Severity,
+            severity: +d.Severity,
             latitude: +d.Start_Lat,
             longitude: +d.Start_Lng,
+            count: +d.Count
         };
     }).then(data => {
         restaurantData = data;
         registerCallbacks()
         drawPoints();
-        // drawLines(nodesById);
     });
 }
 
 function registerCallbacks() {
     searchBar.addEventListener("input", drawPoints);
+
+    d3.select("#scoreFilter").on("input", () => {
+        document.getElementById("scoreValue").innerHTML = "Severity Threshold: " + scoreFilter.value;
+        drawPoints();
+    });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
         pathPoints = [];
@@ -41,51 +52,130 @@ function registerCallbacks() {
 }
 
 
+function drawHistogram(data) {
+    // set the dimensions and margins of the graph
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = HISTO_WIDTH - margin.left - margin.right,
+        height = HISTO_HEIGHT - margin.top - margin.bottom;
+
+    const histogramSvg = d3.select("#histogramVis")
+        .attr("width", HISTO_WIDTH)
+        .attr("height", HISTO_HEIGHT)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    let x = d3.scaleBand()
+          .range([0, width])
+          .padding(0.1);
+    let y = d3.scaleLinear()
+          .range([height, 0]);
+
+    // set the ranges
+    // Scale the range of the data in the domains
+    x.domain(data.map(d => d.routeSegment));
+    y.domain([0, d3.max(data, d => d.neabyAccidents)]);
+    console.log(x)
+
+    // append the rectangles for the bar chart
+    histogramSvg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .style('fill', 'steelblue')
+        .attr("x", d => x(d.routeSegment))
+        .attr("width", x.bandwidth())
+        .attr("y", d => y(d.neabyAccidents))
+        .attr("height", d => height - y(d.neabyAccidents));
+
+    // add the x Axis
+    histogramSvg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    // add the y Axis
+    histogramSvg.append("g")
+        .call(d3.axisLeft(y));
+}
+
+
 async function drawLines() {
-    console.log(pathPoints);
-    const url = "https://api.mapbox.com/directions/v5/mapbox/cycling/"
+    const url = "https://api.mapbox.com/directions/v5/mapbox/driving/"
                 + `${pathPoints[0].longitude},${pathPoints[0].latitude};`
                 + `${pathPoints[1].longitude},${pathPoints[1].latitude}`
                 + `?geometries=geojson&access_token=${TOKEN}`;
-    console.log(url);
     let response = await fetch(url);
     let routeData = await response.json();
-    console.log(routeData);
     let points = routeData.routes[0].geometry.coordinates;
+    console.log(routeData);
+    let histogramData = [];
     for (let i = 0; i < points.length - 1; i++) {
         const p1 = projection(points[i]);
         const p2 = projection(points[i + 1]);
+        const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
+        const newRow = {
+            routeSegment: "hello"+i,
+            neabyAccidents: nearbyAccidentCount
+        }
+        histogramData.push(newRow);
         svg.append("line")
             .attr("class", "lines")
+            .attr("stroke-width", 5)
             .attr("x1", p1[0])
             .attr("y1", p1[1])
             .attr("x2", p2[0])
             .attr("y2", p2[1])
             .style("stroke", "steelblue")
     }
+    console.log(histogramData);
+    drawHistogram(histogramData);
 }
 
 
 function colorPoints(d) {
+    for (let i = 0; i < pathPoints.length; i++) {
+        if (pathPoints[i] == d) {
+            return ON_COLOR;
+        }
+    }
     return DEFAULT_COLOR;
-    // const restaurantPoint = projection([d.longitude, d.latitude]);
-    // const circle0Point = [circles[0].x, circles[0].y];
-    // const distanceSquareOne = squaredDistanceBetween(restaurantPoint, circle0Point);
-    // const r0Squared = Math.pow(circles[0].r, 2);
+}
 
-    // if (circles.length < 2) return (distanceSquareOne < r0Squared) ? ON_COLOR : OFF_COLOR;
 
-    // const circle1Point = [circles[1].x, circles[1].y];
-    // const distanceSquareTwo = squaredDistanceBetween(restaurantPoint, circle1Point);
-    // const r1Squared = Math.pow(circles[1].r, 2);
-    // return (distanceSquareOne < r0Squared && distanceSquareTwo < r1Squared) ? ON_COLOR : OFF_COLOR;
+function countPointsNearLine(p1, p2) {
+    const DELTA = 0.005; // Roughly 500m
+    let filteredData = restaurantData;
+
+    if (scoreFilter.value !== "1") {
+        filteredData = filteredData.filter(d =>
+            d.severity >= parseInt(scoreFilter.value)
+        );
+    }
+
+    if (searchBar.value !== "") {
+        filteredData = filteredData.filter(d =>
+            d.name.toLowerCase().includes(searchBar.value.toLowerCase())
+            || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
+        );
+    }
+
+    filteredData = filteredData.filter(d =>
+        Math.min(p1[0], p2[0]) - DELTA <= d.longitude && d.longitude <= Math.max(p1[0], p2[0]) + DELTA &&
+        Math.min(p1[1], p2[1]) - DELTA <= d.latitude && d.latitude <= Math.max(p1[1], p2[1]) + DELTA
+    );
+
+    return filteredData.length;
+
 }
 
 
 function drawPoints() {
-    const DOTSIZE = 3;
     const restaurantInfo = document.getElementById("restaurantInfo");
     let filteredData = restaurantData;
+
+    if (scoreFilter.value !== "1") {
+        filteredData = filteredData.filter(d =>
+            d.severity >= parseInt(scoreFilter.value)
+        );
+    }
 
     if (searchBar.value !== "") {
         filteredData = filteredData.filter(d =>
@@ -97,11 +187,11 @@ function drawPoints() {
     svg.selectAll(".points").data(filteredData, d => d.id).join(
         enter => enter.append("circle")
             .attr("class", "points")
-            .attr("opacity", 0.75)
+            .attr("opacity", 0.70)
             .style("fill", colorPoints)
             .attr("cx", d => projection([d.longitude, d.latitude])[0])
             .attr("cy", d => projection([d.longitude, d.latitude])[1])
-            .attr("r", DOTSIZE)
+            .attr("r", d => Math.sqrt(d.count) + 2)
             .on("mouseover", d => {
                 svg.append("text")
                     .attr("class", "restaurantLabel")
@@ -110,7 +200,7 @@ function drawPoints() {
                     .text(d.name);
                 restaurantInfo.innerHTML = [
                     "<b>Name: </b>" + d.name,
-                    "<b>Score: </b>" + d.score,
+                    "<b>Severity: </b>" + d.severity,
                     "<b>Address: </b>" + d.address
                 ].join("<br>");
             })
@@ -133,8 +223,6 @@ function drawPoints() {
 
 
 function drawMap(svg) {
-    const MAP_WIDTH = 1000;
-    const MAP_HEIGHT = 750;
     const SCALE = 190000;
 
     // Set up projection that the map is using
