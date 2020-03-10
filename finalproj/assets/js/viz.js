@@ -3,22 +3,24 @@ const MAP_HEIGHT = 730;
 const HISTO_WIDTH = MAP_WIDTH;
 const HISTO_HEIGHT = MAP_HEIGHT / 2;
 const COLORS = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F', '#BCBD22', '#17BECF'];
+
 const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
     .attr("height", MAP_HEIGHT);
 const projection = drawMap(svg);
-const margin = {top: 20, right: 20, bottom: 30, left: 30};
+const margin = {top: 20, right: 20, bottom: 40, left: 50};
 const histogramSvg = d3.select("#histogramVis")
     .attr("width", HISTO_WIDTH)
     .attr("height", HISTO_HEIGHT)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 let restaurantData;
 let pathPoints = [];
 let histogramData = [];
 
 const TOKEN = 'pk.eyJ1IjoidHlsZXJ5ZXAiLCJhIjoiY2s3ZnQ5cGZmMDZmMTNvcGd1amFrOGV3ciJ9.32mOM4QHLL9QKl0TpUZvZw'
-const DEFAULT_COLOR = "darkorange";
+const DEFAULT_COLOR = "orange";
 const ON_COLOR = "blue";
 const OFF_COLOR = "gray";
 const searchBar = document.getElementById("searchBar");
@@ -59,6 +61,7 @@ function registerCallbacks() {
         svg.selectAll(".lines").remove();
         histogramSvg.selectAll(".circles").remove();
         histogramSvg.selectAll(".paths").remove();
+        histogramSvg.selectAll("g").remove();
     });
 }
 
@@ -82,30 +85,34 @@ async function drawLines() {
         segmentColor: "none",
         proportionOfTotalDistance: 0
     });
+
     for (let i = 0; i < points.length - 1; i++) {
         const p1 = projection(points[i]);
         const p2 = projection(points[i + 1]);
-        const segColor = COLORS[i % COLORS.length];
-        const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
-        const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
-        accumulatedDistance += distance;
-        const newRow = {
-            neabyAccidents: nearbyAccidentCount,
-            normalizedAccidents: nearbyAccidentCount / distance,
-            segmentColor: segColor,
-            proportionOfTotalDistance: accumulatedDistance
-        }
-        console.log(accumulatedDistance)
 
-        histogramData.push(newRow);
-        svg.append("line")
-            .attr("class", "lines")
-            .attr("stroke-width", 5)
-            .attr("x1", p1[0])
-            .attr("y1", p1[1])
-            .attr("x2", p2[0])
-            .attr("y2", p2[1])
-            .style("stroke", segColor)
+        const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
+
+        if (distance > 0.1) {
+            const segColor = COLORS[i % COLORS.length];
+            const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
+            const newRow = {
+                neabyAccidents: nearbyAccidentCount,
+                normalizedAccidents: nearbyAccidentCount / distance,
+                segmentColor: segColor,
+                proportionOfTotalDistance: accumulatedDistance + (distance * 0.5)
+            }
+            histogramData.push(newRow);
+            svg.append("line")
+                .attr("class", "lines")
+                .attr("stroke-width", 5)
+                .attr("x1", p1[0])
+                .attr("y1", p1[1])
+                .attr("x2", p2[0])
+                .attr("y2", p2[1])
+                .style("stroke", segColor)
+        }
+
+        accumulatedDistance += distance;
     }
 
     histogramData.push({
@@ -117,12 +124,6 @@ async function drawLines() {
 
     console.log(histogramData);
     drawHistogram();
-}
-
-
-function selectColor() {
-    const hue = Math.floor(Math.random() * 10) * 137.508; // use golden angle approximation
-    return `hsl(${hue},50%,75%)`;
 }
 
 
@@ -182,22 +183,46 @@ function drawHistogram() {
             .attr("r", 8)
             .attr("stroke", "white")
             .attr("stroke-width", 1)
+            .attr("cursor", "pointer")
+            .on('mouseover', function () {
+                d3.select(this).transition()
+                     .duration('50')
+                     .attr('r', 10)
+            })
+            .on('mouseout', function () {
+                d3.select(this).transition()
+                     .duration('50')
+                     .attr('r', 8)
+            })
             .on("click", d => {
                 // TODO
                 console.log(d);
             }),
     );
 
-    // add the x Axis
+    // add the x-axis
     histogramSvg.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xscale));
 
-    // add the y Axis
+    // text label for the x-axis
+    histogramSvg.append("text")
+        .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Distance Along Route");
+
+    // add the y-axis
     histogramSvg.append("g")
         .call(d3.axisLeft(yscale));
 
-
+    // text label for the y axis
+    histogramSvg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Number of Accidents within 500m");
 }
 
 
