@@ -12,6 +12,8 @@
 		<script src='https://d3js.org/d3.v5.min.js'></script>
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/extra.css" />
+		<!-- <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.js'></script>
+		<link href='https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.css' rel='stylesheet' /> -->
 		<!-- <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript> -->
 	</head>
 	<body class="is-preload">
@@ -140,11 +142,20 @@
 					<div id="currentRestaurant" style="position: absolute; top: 80%;">
 						<p id="restaurantInfo"></p>
 					</div>
-					<svg id='vis'></svg>
-					<svg id='histogramVis'></svg>
-
 				</div>
 			</div>
+			<div style="width: 100%; margin: auto;">
+				<svg id='vis'></svg>
+				<svg id='histogramVis'></svg>
+			</div>
+			<div id='map' style='width: 400px; height: 300px;'></div>
+			<!-- <script>
+				mapboxgl.accessToken = 'pk.eyJ1IjoidHlsZXJ5ZXAiLCJhIjoiY2s3ZnQ5cGZmMDZmMTNvcGd1amFrOGV3ciJ9.32mOM4QHLL9QKl0TpUZvZw';
+				var map = new mapboxgl.Map({
+					container: 'map',
+					style: 'mapbox://styles/mapbox/streets-v11'
+				});
+			</script> -->
 		</section>
 
 		<section class="main style2 special">
@@ -451,8 +462,8 @@
 				</header>
 				<div class="row gtr-150">
 					<div class="col-6 col-12-medium">
-						<!-- <span class="image fit"><img src="images/ability4.png" alt="" -->
-							style="border-bottom: 215px black solid"/></span>
+						<!-- <span class="image fit"><img src="images/ability4.png" alt=""
+							style="border-bottom: 215px black solid"/></span> -->
 						<h3>Low Ability Gain Distribution</h3>
 						<p>The above student had a very low estimated change in ability, even though they got a perfect submission in every problem on the first try. This makes sense, as there is no evidence to indicate that the student learned anything in the process, which means our score of 0 is an accurate measurement.</p>
 					</div>

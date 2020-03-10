@@ -2,7 +2,7 @@ const MAP_WIDTH = 950;
 const MAP_HEIGHT = 730;
 const HISTO_WIDTH = MAP_WIDTH;
 const HISTO_HEIGHT = MAP_HEIGHT / 2;
-const COLORS = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F', '#BCBD22', '#17BECF'];
+const COLORS = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F', '#BCBD22', '#17BECF']; // Tableau-10
 
 const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
@@ -15,7 +15,7 @@ const histogramSvg = d3.select("#histogramVis")
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-let restaurantData;
+let accidentData;
 let pathPoints = [];
 let histogramData = [];
 
@@ -40,20 +40,19 @@ function main() {
             count: +d.Count
         };
     }).then(data => {
-        restaurantData = data;
+        accidentData = data;
         registerCallbacks()
         drawPoints();
     });
 }
 
+
 function registerCallbacks() {
     searchBar.addEventListener("input", drawPoints);
-
     d3.select("#scoreFilter").on("input", () => {
         document.getElementById("scoreValue").innerHTML = "Severity Threshold: " + scoreFilter.value;
         drawPoints();
     });
-
     document.getElementById("resetBtn").addEventListener("click", () => {
         pathPoints = [];
         histogramData = [];
@@ -75,13 +74,10 @@ async function drawLines() {
     const routeData = await response.json();
     console.log(routeData);
     const points = routeData.routes[0].geometry.coordinates;
-    // const totalDistance = routeData.routes[0].distance;
-
 
     let accumulatedDistance = 0;
     histogramData.push({
         neabyAccidents: 0,
-        normalizedAccidents: 0,
         segmentColor: "none",
         proportionOfTotalDistance: 0
     });
@@ -89,15 +85,12 @@ async function drawLines() {
     for (let i = 0; i < points.length - 1; i++) {
         const p1 = projection(points[i]);
         const p2 = projection(points[i + 1]);
-
         const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
-
         if (distance > 0.1) {
             const segColor = COLORS[i % COLORS.length];
             const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
             const newRow = {
                 neabyAccidents: nearbyAccidentCount,
-                normalizedAccidents: nearbyAccidentCount / distance,
                 segmentColor: segColor,
                 proportionOfTotalDistance: accumulatedDistance + (distance * 0.5)
             }
@@ -111,13 +104,11 @@ async function drawLines() {
                 .attr("y2", p2[1])
                 .style("stroke", segColor)
         }
-
         accumulatedDistance += distance;
     }
 
     histogramData.push({
         neabyAccidents: 0,
-        normalizedAccidents: 0,
         segmentColor: "none",
         proportionOfTotalDistance: accumulatedDistance + 1
     });
@@ -150,7 +141,7 @@ function latLongDistance(lon1, lat1, lon2, lat2) {
 
 
 function drawHistogram() {
-    const width = HISTO_WIDTH - 4*margin.left - margin.right;
+    const width = HISTO_WIDTH - margin.left - margin.right;
     const height = HISTO_HEIGHT - margin.top - margin.bottom;
     // set the dimensions and margins of the graph
     let xscale = d3.scaleLinear() // scaleBand
@@ -238,7 +229,7 @@ function colorPoints(d) {
 
 function countPointsNearLine(p1, p2) {
     const DELTA = 0.005; // Roughly 500m
-    let filteredData = restaurantData;
+    let filteredData = accidentData;
 
     if (scoreFilter.value !== "1") {
         filteredData = filteredData.filter(d =>
@@ -264,7 +255,7 @@ function countPointsNearLine(p1, p2) {
 
 function drawPoints() {
     const restaurantInfo = document.getElementById("restaurantInfo");
-    let filteredData = restaurantData;
+    let filteredData = accidentData;
 
     if (scoreFilter.value !== "1") {
         filteredData = filteredData.filter(d =>
@@ -319,7 +310,6 @@ function drawPoints() {
 
 function drawMap(svg) {
     const SCALE = 190000;
-
     // Set up projection that the map is using
     // This maps between <longitude, latitude> position to <x, y> pixel position on the map
     // projection is a function and it has an inverse:
@@ -332,6 +322,7 @@ function drawMap(svg) {
     svg.append("image")
         .attr("width", MAP_WIDTH)
         .attr("height", MAP_HEIGHT)
+        // .style("object-fit", "fill")
         .attr("xlink:href", "images/map.svg");
     return projection;
 }
