@@ -1,13 +1,13 @@
 const MAP_WIDTH = 950;
 const MAP_HEIGHT = 730;
 const HISTO_WIDTH = MAP_WIDTH;
-const HISTO_HEIGHT = MAP_HEIGHT;
-const COLORS = ["brown", "red", "orange", "yellow", "green", "skyblue", "teal", "blue", "indigo", "violet", "black"]
+const HISTO_HEIGHT = MAP_HEIGHT / 2;
+const COLORS = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F', '#BCBD22', '#17BECF'];
 const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
     .attr("height", MAP_HEIGHT);
 const projection = drawMap(svg);
-const margin = {top: 20, right: 20, bottom: 30, left: 20};
+const margin = {top: 20, right: 20, bottom: 30, left: 30};
 const histogramSvg = d3.select("#histogramVis")
     .attr("width", HISTO_WIDTH)
     .attr("height", HISTO_HEIGHT)
@@ -15,6 +15,7 @@ const histogramSvg = d3.select("#histogramVis")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 let restaurantData;
 let pathPoints = [];
+let histogramData = [];
 
 const TOKEN = 'pk.eyJ1IjoidHlsZXJ5ZXAiLCJhIjoiY2s3ZnQ5cGZmMDZmMTNvcGd1amFrOGV3ciJ9.32mOM4QHLL9QKl0TpUZvZw'
 const DEFAULT_COLOR = "darkorange";
@@ -53,36 +54,49 @@ function registerCallbacks() {
 
     document.getElementById("resetBtn").addEventListener("click", () => {
         pathPoints = [];
+        histogramData = [];
         drawPoints();
         svg.selectAll(".lines").remove();
-        histogramSvg.selectAll(".bars").remove();
+        histogramSvg.selectAll(".circles").remove();
+        histogramSvg.selectAll(".paths").remove();
     });
 }
 
 
-let histogramData = [];
 async function drawLines() {
     const url = "https://api.mapbox.com/directions/v5/mapbox/driving/"
                 + `${pathPoints[0].longitude},${pathPoints[0].latitude};`
                 + `${pathPoints[1].longitude},${pathPoints[1].latitude}`
                 + `?geometries=geojson&access_token=${TOKEN}`;
-    let response = await fetch(url);
-    let routeData = await response.json();
-    let points = routeData.routes[0].geometry.coordinates;
-    const totalDistance = routeData.routes[0].geometry.distance;
+    const response = await fetch(url);
+    const routeData = await response.json();
     console.log(routeData);
+    const points = routeData.routes[0].geometry.coordinates;
+    // const totalDistance = routeData.routes[0].distance;
+
+
+    let accumulatedDistance = 0;
+    histogramData.push({
+        neabyAccidents: 0,
+        normalizedAccidents: 0,
+        segmentColor: "none",
+        proportionOfTotalDistance: 0
+    });
     for (let i = 0; i < points.length - 1; i++) {
         const p1 = projection(points[i]);
         const p2 = projection(points[i + 1]);
         const segColor = COLORS[i % COLORS.length];
         const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
         const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
+        accumulatedDistance += distance;
         const newRow = {
-            routeSegment: "hello"+i,
             neabyAccidents: nearbyAccidentCount,
+            normalizedAccidents: nearbyAccidentCount / distance,
             segmentColor: segColor,
-            proportionOfTotalDistance: distance / totalDistance
+            proportionOfTotalDistance: accumulatedDistance
         }
+        console.log(accumulatedDistance)
+
         histogramData.push(newRow);
         svg.append("line")
             .attr("class", "lines")
@@ -93,8 +107,22 @@ async function drawLines() {
             .attr("y2", p2[1])
             .style("stroke", segColor)
     }
+
+    histogramData.push({
+        neabyAccidents: 0,
+        normalizedAccidents: 0,
+        segmentColor: "none",
+        proportionOfTotalDistance: accumulatedDistance + 1
+    });
+
     console.log(histogramData);
     drawHistogram();
+}
+
+
+function selectColor() {
+    const hue = Math.floor(Math.random() * 10) * 137.508; // use golden angle approximation
+    return `hsl(${hue},50%,75%)`;
 }
 
 
@@ -102,7 +130,6 @@ function latLongDistance(lon1, lat1, lon2, lat2) {
 	if ((lat1 == lat2) && (lon1 == lon2)) {
 		return 0;
 	}
-
     const radlat1 = Math.PI * lat1/180;
     const radlat2 = Math.PI * lat2/180;
     const theta = lon1 - lon2;
@@ -122,39 +149,55 @@ function latLongDistance(lon1, lat1, lon2, lat2) {
 
 
 function drawHistogram() {
-    const width = HISTO_WIDTH - margin.left - margin.right;
+    const width = HISTO_WIDTH - 4*margin.left - margin.right;
     const height = HISTO_HEIGHT - margin.top - margin.bottom;
     // set the dimensions and margins of the graph
-    let x = d3.scaleBand()
-          .range([0, width])
-          .padding(0.1);
-    let y = d3.scaleLinear()
-          .range([height, 0]);
+    let xscale = d3.scaleLinear() // scaleBand
+        .range([0, width]);
+    let yscale = d3.scaleLinear()
+        .range([height, 0]);
 
-    // set the ranges
     // Scale the range of the data in the domains
-    x.domain(histogramData.map(d => d.routeSegment));
-    y.domain([0, d3.max(histogramData, d => d.neabyAccidents)]);
+    xscale.domain([0, d3.max(histogramData, d => d.proportionOfTotalDistance)]);
+    yscale.domain([0, d3.max(histogramData, d => d.neabyAccidents)]);
 
-    // append the rectangles for the bar chart
-    histogramSvg.selectAll(".bars").data(histogramData).join(
-        enter => enter.append("rect")
+    // draw line
+    histogramSvg.datum(histogramData).append("path")
+        .attr('class', 'paths')
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width", 2)
+        .attr("d", d3.line()
+            .x(d => xscale(d.proportionOfTotalDistance))
+            .y(d => yscale(d.neabyAccidents))
+            .curve(d3.curveMonotoneX));
+
+    // append the circles
+    histogramSvg.selectAll(".circles").data(histogramData).join(
+        enter => enter.append("circle")
             .style('fill', d => d.segmentColor)
-            .attr('class', 'bars')
-            .attr("x", d => x(d.routeSegment))
-            .attr("width", x.bandwidth())
-            .attr("y", d => y(d.neabyAccidents))
-            .attr("height", d => height - y(d.neabyAccidents))
+            .attr('class', 'circles')
+            .attr("cx", d => xscale(d.proportionOfTotalDistance))
+            .attr("cy", d => yscale(d.neabyAccidents))
+            .attr("r", 8)
+            .attr("stroke", "white")
+            .attr("stroke-width", 1)
+            .on("click", d => {
+                // TODO
+                console.log(d);
+            }),
     );
 
     // add the x Axis
     histogramSvg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .call(d3.axisBottom(xscale));
 
     // add the y Axis
     histogramSvg.append("g")
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(yscale));
+
+
 }
 
 
