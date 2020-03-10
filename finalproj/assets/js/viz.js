@@ -7,7 +7,7 @@ const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
     .attr("height", MAP_HEIGHT);
 const projection = drawMap(svg);
-const margin = {top: 20, right: 20, bottom: 30, left: 0};
+const margin = {top: 20, right: 20, bottom: 30, left: 20};
 const histogramSvg = d3.select("#histogramVis")
     .attr("width", HISTO_WIDTH)
     .attr("height", HISTO_HEIGHT)
@@ -69,16 +69,19 @@ async function drawLines() {
     let response = await fetch(url);
     let routeData = await response.json();
     let points = routeData.routes[0].geometry.coordinates;
+    const totalDistance = routeData.routes[0].geometry.distance;
     console.log(routeData);
     for (let i = 0; i < points.length - 1; i++) {
         const p1 = projection(points[i]);
         const p2 = projection(points[i + 1]);
         const segColor = COLORS[i % COLORS.length];
         const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
+        const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
         const newRow = {
             routeSegment: "hello"+i,
             neabyAccidents: nearbyAccidentCount,
-            segmentColor: segColor
+            segmentColor: segColor,
+            proportionOfTotalDistance: distance / totalDistance
         }
         histogramData.push(newRow);
         svg.append("line")
@@ -92,6 +95,29 @@ async function drawLines() {
     }
     console.log(histogramData);
     drawHistogram();
+}
+
+
+function latLongDistance(lon1, lat1, lon2, lat2) {
+	if ((lat1 == lat2) && (lon1 == lon2)) {
+		return 0;
+	}
+
+    const radlat1 = Math.PI * lat1/180;
+    const radlat2 = Math.PI * lat2/180;
+    const theta = lon1 - lon2;
+    const radtheta = Math.PI * theta/180;
+    let dist = Math.sin(radlat1) * Math.sin(radlat2)
+        + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    if (dist > 1) {
+        dist = 1;
+    }
+    dist = Math.acos(dist);
+    dist = dist * 180/Math.PI;
+    dist = dist * 60 * 1.1515;
+    dist = dist * 1.609344;
+    return dist;
+
 }
 
 
