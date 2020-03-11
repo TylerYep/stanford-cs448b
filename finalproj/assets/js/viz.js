@@ -1,4 +1,4 @@
-const MAP_WIDTH = 1000;
+const MAP_WIDTH = 1100;
 const MAP_HEIGHT = 500;
 const HISTO_WIDTH = MAP_WIDTH;
 const HISTO_HEIGHT = MAP_HEIGHT / 2;
@@ -10,23 +10,23 @@ const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v10',
     zoom: 12,
+    maxZoom: 15,
+    minZoom: 9,
     center: [-122.061578, 37.385532]
 });
-// map.scrollZoom.disable();
-// map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+// map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
 const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
     .attr("height", MAP_HEIGHT)
     .style("pointer-events", "none");
-// let projection = getMapBoxProjection(); // getProjection();
-
-const margin = {top: 20, right: 20, bottom: 40, left: 50};
+const margin = {top: 20, right: 20, bottom: 50, left: 50};
 const histogramSvg = d3.select("#histogramVis")
     .attr("width", HISTO_WIDTH)
     .attr("height", HISTO_HEIGHT)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+drawAxes();
 
 let accidentData;
 let pathPoints = [];
@@ -38,6 +38,27 @@ const ON_COLOR = "blue";
 const OFF_COLOR = "gray";
 const searchBar = document.getElementById("searchBar");
 const scoreFilter = document.getElementById("scoreFilter");
+
+
+function drawAxes() {
+    const width = HISTO_WIDTH - margin.left - margin.right;
+    const height = HISTO_HEIGHT - margin.top - margin.bottom;
+
+    // text label for the x-axis
+    histogramSvg.append("text")
+        .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Distance Along Route (miles)");
+
+    // text label for the y axis
+    histogramSvg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("# of Accidents on Route");
+}
 
 
 function main() {
@@ -110,6 +131,7 @@ function registerCallbacks() {
         histogramSvg.selectAll("g").remove();
     });
 }
+
 
 function updateLines(projection) {
     svg.selectAll(".lines").data(linePointPairs).join(
@@ -254,24 +276,9 @@ function drawHistogram() {
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xscale));
 
-    // text label for the x-axis
-    histogramSvg.append("text")
-        .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
-        .style("text-anchor", "middle")
-        .text("Distance Along Route (miles)");
-
     // add the y-axis
     histogramSvg.append("g")
         .call(d3.axisLeft(yscale));
-
-    // text label for the y axis
-    histogramSvg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (height / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("# of Accidents on Route");
 }
 
 
@@ -343,6 +350,7 @@ function drawPoints(projection) {
             .attr("r", d => Math.sqrt(d.count) + 2)
             .style("pointer-events", "all")
             .on("mouseover", d => {
+                const projection = getMapBoxProjection();
                 svg.append("text")
                     .attr("class", "restaurantLabel")
                     .attr("x", _ => projection([d.longitude, d.latitude])[0] + 10)
