@@ -1,13 +1,26 @@
-const MAP_WIDTH = 950;
-const MAP_HEIGHT = 730;
+const MAP_WIDTH = 1000;
+const MAP_HEIGHT = 500;
 const HISTO_WIDTH = MAP_WIDTH;
 const HISTO_HEIGHT = MAP_HEIGHT / 2;
 const COLORS = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F', '#BCBD22', '#17BECF']; // Tableau-10
+const TOKEN = 'pk.eyJ1IjoidHlsZXJ5ZXAiLCJhIjoiY2s3ZnQ5cGZmMDZmMTNvcGd1amFrOGV3ciJ9.32mOM4QHLL9QKl0TpUZvZw'
+
+mapboxgl.accessToken = TOKEN;
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v10',
+    zoom: 12,
+    center: [-122.061578, 37.385532]
+});
+// map.scrollZoom.disable();
+// map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
 const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
-    .attr("height", MAP_HEIGHT);
-const projection = drawMap(svg);
+    .attr("height", MAP_HEIGHT)
+    .style("pointer-events", "none");
+// let projection = getMapBoxProjection(); // getProjection();
+
 const margin = {top: 20, right: 20, bottom: 40, left: 50};
 const histogramSvg = d3.select("#histogramVis")
     .attr("width", HISTO_WIDTH)
@@ -18,8 +31,8 @@ const histogramSvg = d3.select("#histogramVis")
 let accidentData;
 let pathPoints = [];
 let histogramData = [];
+let linePointPairs = [];
 
-const TOKEN = 'pk.eyJ1IjoidHlsZXJ5ZXAiLCJhIjoiY2s3ZnQ5cGZmMDZmMTNvcGd1amFrOGV3ciJ9.32mOM4QHLL9QKl0TpUZvZw'
 const DEFAULT_COLOR = "orange";
 const ON_COLOR = "blue";
 const OFF_COLOR = "gray";
@@ -41,9 +54,41 @@ function main() {
         };
     }).then(data => {
         accidentData = data;
-        registerCallbacks()
-        drawPoints();
+        registerCallbacks();
+
+        map.on("viewreset", function() {
+            render();
+        });
+        map.on("move", function() {
+            render();
+        });
+        render();
     });
+}
+
+
+function render() {
+    const projection = getMapBoxProjection();
+    drawPoints(projection);
+    updateLines(projection);
+}
+
+
+function getMapBoxProjection() {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const scale = 512 * 0.5 / Math.PI * Math.pow(2, zoom);
+
+    // Set up projection that the map is using
+    // This maps between <longitude, latitude> position to <x, y> pixel position on the map
+    // projection is a function and it has an inverse:
+    // projection([lon, lat]) returns [x, y]
+    // projection.invert([x, y]) returns [lon, lat]
+    const projection = d3.geoMercator()
+        .center([center.lng, center.lat])
+        .scale(scale)
+        .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
+    return projection;
 }
 
 
@@ -56,16 +101,36 @@ function registerCallbacks() {
     document.getElementById("resetBtn").addEventListener("click", () => {
         pathPoints = [];
         histogramData = [];
-        drawPoints();
+        linePointPairs = [];
+        render();
         svg.selectAll(".lines").remove();
         histogramSvg.selectAll(".circles").remove();
         histogramSvg.selectAll(".paths").remove();
+        histogramSvg.selectAll(".lines").remove();
         histogramSvg.selectAll("g").remove();
     });
 }
 
+function updateLines(projection) {
+    svg.selectAll(".lines").data(linePointPairs).join(
+        enter => enter.append("line")
+            .attr("class", "lines")
+            .attr("stroke-width", 5)
+            .attr("x1", d => projection(d[0])[0])
+            .attr("y1", d => projection(d[0])[1])
+            .attr("x2", d => projection(d[1])[0])
+            .attr("y2", d => projection(d[1])[1])
+            .style("stroke", (_, i) => COLORS[i % COLORS.length]),
+        update => update
+            .attr("x1", d => projection(d[0])[0])
+            .attr("y1", d => projection(d[0])[1])
+            .attr("x2", d => projection(d[1])[0])
+            .attr("y2", d => projection(d[1])[1])
+    );
+}
 
-async function drawLines() {
+
+async function drawLines(projection) {
     const url = "https://api.mapbox.com/directions/v5/mapbox/driving/"
                 + `${pathPoints[0].longitude},${pathPoints[0].latitude};`
                 + `${pathPoints[1].longitude},${pathPoints[1].latitude}`
@@ -75,6 +140,9 @@ async function drawLines() {
     console.log(routeData);
     const points = routeData.routes[0].geometry.coordinates;
 
+    linePointPairs = d3.pairs(points);
+    updateLines(projection);
+
     let accumulatedDistance = 0;
     histogramData.push({
         neabyAccidents: 0,
@@ -83,8 +151,6 @@ async function drawLines() {
     });
 
     for (let i = 0; i < points.length - 1; i++) {
-        const p1 = projection(points[i]);
-        const p2 = projection(points[i + 1]);
         const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
         if (distance > 0.1) {
             const segColor = COLORS[i % COLORS.length];
@@ -95,14 +161,6 @@ async function drawLines() {
                 proportionOfTotalDistance: accumulatedDistance + (distance * 0.5)
             }
             histogramData.push(newRow);
-            svg.append("line")
-                .attr("class", "lines")
-                .attr("stroke-width", 5)
-                .attr("x1", p1[0])
-                .attr("y1", p1[1])
-                .attr("x2", p2[0])
-                .attr("y2", p2[1])
-                .style("stroke", segColor)
         }
         accumulatedDistance += distance;
     }
@@ -200,7 +258,7 @@ function drawHistogram() {
     histogramSvg.append("text")
         .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
         .style("text-anchor", "middle")
-        .text("Distance Along Route");
+        .text("Distance Along Route (miles)");
 
     // add the y-axis
     histogramSvg.append("g")
@@ -213,7 +271,7 @@ function drawHistogram() {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Number of Accidents within 500m");
+        .text("# of Accidents on Route");
 }
 
 
@@ -228,7 +286,7 @@ function colorPoints(d) {
 
 
 function countPointsNearLine(p1, p2) {
-    const DELTA = 0.005; // Roughly 500m
+    const DELTA = 0.001; // Roughly 100m
     let filteredData = accidentData;
 
     if (scoreFilter.value !== "1") {
@@ -253,9 +311,14 @@ function countPointsNearLine(p1, p2) {
 }
 
 
-function drawPoints() {
+function drawPoints(projection) {
     const restaurantInfo = document.getElementById("restaurantInfo");
     let filteredData = accidentData;
+
+    filteredData = filteredData.filter(d => {
+        const [x, y] = projection([d.longitude, d.latitude]);
+        return x >= 0 && y >= 0 && x <= MAP_WIDTH && y <= MAP_HEIGHT;
+    });
 
     if (scoreFilter.value !== "1") {
         filteredData = filteredData.filter(d =>
@@ -278,6 +341,7 @@ function drawPoints() {
             .attr("cx", d => projection([d.longitude, d.latitude])[0])
             .attr("cy", d => projection([d.longitude, d.latitude])[1])
             .attr("r", d => Math.sqrt(d.count) + 2)
+            .style("pointer-events", "all")
             .on("mouseover", d => {
                 svg.append("text")
                     .attr("class", "restaurantLabel")
@@ -299,32 +363,15 @@ function drawPoints() {
                     pathPoints.push(d);
                     d3.select(this).style("fill", ON_COLOR);
                     if (pathPoints.length == 2) {
-                        drawLines();
+                        const projection = getMapBoxProjection();
+                        drawLines(projection);
                     }
                 }
             }),
         update => update.style("fill", colorPoints)
+            .attr("cx", d => projection([d.longitude, d.latitude])[0])
+            .attr("cy", d => projection([d.longitude, d.latitude])[1])
     );
-}
-
-
-function drawMap(svg) {
-    const SCALE = 190000;
-    // Set up projection that the map is using
-    // This maps between <longitude, latitude> position to <x, y> pixel position on the map
-    // projection is a function and it has an inverse:
-    // projection([lon, lat]) returns [x, y]
-    // projection.invert([x, y]) returns [lon, lat]
-    const projection = d3.geoMercator()
-                        .center([-122.061578, 37.385532])
-                        .scale(SCALE)
-                        .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
-    svg.append("image")
-        .attr("width", MAP_WIDTH)
-        .attr("height", MAP_HEIGHT)
-        // .style("object-fit", "fill")
-        .attr("xlink:href", "images/map.svg");
-    return projection;
 }
 
 
