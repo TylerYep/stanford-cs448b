@@ -1,11 +1,44 @@
-import pandas as pd
-import networkx as nx
-import pandas as pd
-from sklearn.neighbors import NearestNeighbors
-import numpy as np
+# import pandas as pd
+# import networkx as nx
+# from sklearn.neighbors import NearestNeighbors
+# import numpy as np
 import csv
-from tqdm import tqdm
+# from tqdm import tqdm
 
+
+def get_month_and_year():
+    first_line = True
+    with open('data/accidents_ca.csv') as f:
+        with open('data/accidents_ca_with_date.csv', 'w') as new_f:
+            for line in f:
+                if first_line:
+                    new_f.write(line[:-1] + ',year,month,day,hour\n')
+                    first_line = False
+                else:
+                    split_line = line.split(',')
+                    date = str(split_line[4])
+                    split_date = date.split('-')
+                    year = split_date[0]
+                    month = split_date[1]
+                    split_second_half = split_date[2].split(' ')
+                    day = split_second_half[0]
+                    split_time = split_second_half[1].split(':')
+                    hour = split_time[0]
+                    new_f.write(line[:-1] + ',' + year + ',' + month + ',' + day + ',' + hour + '\n')
+
+def get_month_and_severity_counts():
+    first_line = True
+    data = [ [0] * 4 for _ in range(12)]
+    with open('data/accidents_ca_with_date.csv') as f:
+        for line in f:
+            if first_line:
+                first_line = False
+            else:
+                split_line = line.split(',')
+                month = int(split_line[-3])
+                severity = int(split_line[3])
+                data[month-1][severity-1] += 1
+    print(data)
 
 def remove_duplicates():
     first_line = True
@@ -134,6 +167,8 @@ def convert_graph_to_csv(filename):
 
 if __name__ == '__main__':
     # create_graph()
-    remove_duplicates()
+    # remove_duplicates()
     # convert_graph_to_csv('data/graph_bay_area_knn_5.csv')
     # get_bay_area_locations()
+    # get_month_and_year()
+    get_month_and_severity_counts()
