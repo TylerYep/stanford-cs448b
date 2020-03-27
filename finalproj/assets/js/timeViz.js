@@ -1,10 +1,10 @@
-// function get_colors(n) {
-//   var colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c",
-//   "#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6",
-//   "#6a3d9a"];
+function get_colors(n) {
+  var colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c",
+  "#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6",
+  "#6a3d9a"];
 
-//   return colors[ n % colors.length];
-// }
+  return colors[ n % colors.length];
+}
 
 const margin2 = {top: 61, right: 140, bottom: 101, left: 50},
   width = 960 - margin2.left - margin2.right,
@@ -54,7 +54,7 @@ svg2.append("g")
 d3.csv("data/month_and_severity_counts.csv", d => {
     return {
       month: +d.month,
-      key: d.severity,
+      key: +d.severity,
       value: +d.accidents
       // severity_1: +d.severity_1,
       // severity_2: +d.severity_2,
@@ -182,7 +182,7 @@ d3.csv("data/month_and_severity_counts.csv", d => {
         .data(color.domain()).enter()
         .append("g")
         .attr("class","legend")
-      .attr("transform", "translate(" + (WIDTH +20) + "," + 0+ ")");
+      .attr("transform", "translate(" + (width +20) + "," + 0+ ")");
 
     legend.append("rect")
       .attr("x", 0)
