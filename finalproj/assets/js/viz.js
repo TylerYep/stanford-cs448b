@@ -20,7 +20,7 @@ const svg = d3.select("#vis")
     .attr("width", MAP_WIDTH)
     .attr("height", MAP_HEIGHT)
     .style("pointer-events", "none");
-const margin = {top: 20, right: 20, bottom: 50, left: 50};
+const margin = {top: 20, right: 20, bottom: 50, left: 60};
 const histogramSvg = d3.select("#histogramVis")
     .attr("width", HISTO_WIDTH)
     .attr("height", HISTO_HEIGHT)
@@ -77,12 +77,8 @@ function main() {
         accidentData = data;
         registerCallbacks();
 
-        map.on("viewreset", function() {
-            render();
-        });
-        map.on("move", function() {
-            render();
-        });
+        map.on("viewreset", render);
+        map.on("move", render);
         render();
     });
 }
@@ -176,7 +172,10 @@ async function drawLines(projection) {
         const distance = latLongDistance(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
         if (distance > 0.1) {
             const segColor = COLORS[i % COLORS.length];
-            const nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
+            let nearbyAccidentCount = countPointsNearLine(points[i], points[i + 1]);
+            if (distance > 1) {
+                nearbyAccidentCount /= Math.sqrt(distance)
+            }
             const newRow = {
                 neabyAccidents: nearbyAccidentCount,
                 segmentColor: segColor,
@@ -231,7 +230,7 @@ function drawHistogram() {
 
     // Scale the range of the data in the domains
     xscale.domain([0, d3.max(histogramData, d => d.proportionOfTotalDistance)]);
-    yscale.domain([0, d3.max(histogramData, d => d.neabyAccidents)]);
+    yscale.domain([0, Math.max(300, d3.max(histogramData, d => d.neabyAccidents))]);
 
     // draw line
     histogramSvg.datum(histogramData).append("path")
@@ -339,15 +338,14 @@ function drawPoints(projection) {
             || d.address.toLowerCase().includes(searchBar.value.toLowerCase())
         );
     }
-
     svg.selectAll(".points").data(filteredData, d => d.id).join(
         enter => enter.append("circle")
             .attr("class", "points")
-            .attr("opacity", 0.65)
+            .attr("opacity", 0.6)
             .style("fill", colorPoints)
             .attr("cx", d => projection([d.longitude, d.latitude])[0])
             .attr("cy", d => projection([d.longitude, d.latitude])[1])
-            .attr("r", d => Math.sqrt(d.count) + 2)
+            .attr("r", d => Math.sqrt(d.count) + 1)
             .style("pointer-events", "all")
             .on("mouseover", d => {
                 const projection = getMapBoxProjection();
