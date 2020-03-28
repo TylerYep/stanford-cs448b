@@ -9,7 +9,7 @@ mapboxgl.accessToken = TOKEN;
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v10',
-    zoom: 12,
+    zoom: 11,
     maxZoom: 15,
     minZoom: 9,
     center: [-122.061578, 37.385532]
