@@ -122,28 +122,13 @@
 					<header class="major">
 						<h2>US Map Visualization</h2>
 					</header>
-					<p>As of December of 2019, the dataset covers <b>49 US states</b> with a vast majority occurring in the state of <b>California</b>. We will be focusing on the California accidents in our analysis, with a specific look at the <b>San Francisco bay area</b>.</p>
+					<p>As of December of 2019, the dataset covers <b>49 US states</b> with a vast majority occurring in the state of <b>California</b>. We will be focusing on the California accidents in our analysis, with a specific look at the <b>San Francisco Bay Area</b>. On the below map, click on different states to see the number of accidents that occurred in each one over the past 4 years.</p>
 					<br/>
-						<style>
-						  path {
-							pointer-events: all;
-						  }
-
-						  path:hover {
-							opacity: 0.6;
-							fill: lightblue;
-							cursor: pointer;
-						  }
-						  .us-state-map {
-							position: relative;
-						  }
-
-					</style>
 					<div class="glitch-embed-wrap" style="height: 720px; width: 100%;">
 						<iframe
 						src="https://glitch.com/embed/#!/embed/america-proj?path=&previewSize=100"
 						title="america-proj on Glitch"
-						allow="geolocation; microphone; camera; midi; vr; encrypted-media"
+						allow="geolocation; microphone; camera; midi; encrypted-media"
 						style="height: 100%; width: 100%; border: 0;">
 						</iframe>
 					</div>
@@ -155,11 +140,10 @@
 		<section class="main style1">
 			<div class="container">
 				<div class="row gtr-150">
-					<div class="col-12 col-12-medium">
-						<header class="major">
-							<h2>Bay Area Map Visualization</h2>
-						</header>
-					</div>
+					<header class="major">
+						<h2>Bay Area Map Visualization</h2>
+					</header>
+					<p>Let's examine a typical commute from Stanford University to Milpitas, CA. Click on those two locations on the map and see how many accidents occur on the way.</p>
 					<div class="col-4 col-12-medium">
 						<input id="searchBar" type="text" placeholder="Search (Name / Address)" name="search">
 					</div>
@@ -186,16 +170,13 @@
 		<section class="main style1">
 			<div class="container">
 				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
-						<header class="major">
-							<h2>Accidents Over Time Visualization</h2>
-						</header>
-					</div>
+					<header class="major">
+						<h2>Accidents Over Time Visualization</h2>
+					</header>
+					<p>Finally, let's examine the trends of accidents each month from different years (data collection started in March 2016). As you can see, on most years the number of accidents is uniform. However, in 2019, we saw a surge in accidents in the later part of the year, particularly in October and December.</p>
 					<div class="col-12 col-12-medium">
 						<form id="radio_btn_select">
 							<p style="display:inline">Year Displayed: </p>
-							<!-- <input type="radio" id="radioTotal" name="year" value="total" checked>
-							<label for="radioTotal">Total</label> -->
 							<input type="radio" id="radio2019" name="year" value="2019" checked>
 							<label for="radio2019">2019</label>
 							<input type="radio" id="radio2018" name="year" value="2018">
