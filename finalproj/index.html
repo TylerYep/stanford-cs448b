@@ -118,14 +118,26 @@
 		<section id="four" class="main style2">
 			<div class="container">
 				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
-						<header class="major">
-							<h2>Visualizations</h2>
-						</header>
-						</div>
-					<div class="col-6 col-12-medium">
-						<!-- <span class="image fit visualizer"><img src="images/visualizer2.png" alt="" /></span> -->
-					</div>
+					<header class="major">
+						<h2>US Map Visualization</h2>
+					</header>
+					<br/>
+						<style>
+						  path {
+							pointer-events: all;
+						  }
+
+						  path:hover {
+							opacity: 0.6;
+							fill: lightblue;
+							cursor: pointer;
+						  }
+						  .us-state-map {
+							position: relative;
+						  }
+
+					</style>
+				<div id="root"></div>
 				</div>
 			</div>
 		</section>
@@ -165,7 +177,7 @@
 				<div class="row gtr-150">
 					<div class="col-6 col-12-medium">
 						<header class="major">
-							<h2>Timeline Visualization</h2>
+							<h2>Accidents Over Time Visualization</h2>
 						</header>
 					</div>
 					<div class="col-12 col-12-medium">
@@ -194,8 +206,30 @@
 				<header class="major">
 					<h2>Conclusion</h2>
 				</header>
-				<p>From this project, we hope you've learned the importance .</p>
-				<p>To extend this project further, our next steps would likely look at incorporating some measure of confidence in our ability scores for students, as we want predictions on students with few submissions to be less confident than students with many submissions and attempted many problems. Additionally, we may also want to look at weighting categories of rubric items differently from others. For example, for loops and repeats may be more difficult to learn, so we want to "reward" ability scores that showcase a lot of development in those fields.</p>
+				<div class="row gtr-150">
+					<div class="col-6 col-12-medium">
+						<!-- <span class="image fit"><img src="images/ability4.png" alt=""
+							style="border-bottom: 215px black solid"/></span> -->
+						<h3>Common Patterns</h3>
+						<p>Through each of the visualizations, we see that there are common patterns that follow these traffic accidents, either as a result of reality or the constraints of the given dataset. However, we can see that junctions and highway entrances are highly accident-prone areas of the road. Also, traffic accidents tend to occur at a higher frequency during the dark winter months.</p>
+					</div>
+					<div class="col-6 col-12-medium">
+						<!-- <span class="image fit"><img src="images/ability1.png" alt="" /></span> -->
+						<h3>Prevention</h3>
+						<p>With the knowledge of common patterns for traffic accidents that we know now, we can take a second to think and take more precaution the next time we enter a highway or take a drive when it is dark outside. Taking this extra step of caution will likelu help the prevention of future accidents and protect the safety of ourselves and that of others with whom we share the road.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 6. Future Work-->
+		<section id="six" class="main style1 special">
+			<div class="container">
+				<header class="major">
+					<h2>Future Work</h2>
+				</header>
+				<p>In this project, we both learned the many factors that can ultimately influence the likelihood of a car accident and some good and not so good ways of conveying these factors.</p>
+				<p>To extend this project further, our next steps would likely be incorporating even more interaction and transparency in the above visualizations by incorporating more information that we have from the dataset. We would also likely explore other factors that influence traffic accidents, such as weather conditions and time of day, and extend our findings to other parts of the country and world.</p>
 			</div>
 		</section>
 
@@ -228,5 +262,13 @@
 		<script src='assets/js/viz.js'></script>
 		<script src='assets/js/timeViz.js'></script>
 		<script src="https://d3js.org/d3-array.v2.min.js"></script>
+
+		<script src="bundle.js"></script>
+		<script src="1.chunk.js"></script>
+		<script src="main.chunk.js"></script>
+		<script src="main.c6c952f43266d5e1cc05.hot-update.js"></script>
+
+
+
 	</body>
 </html>
