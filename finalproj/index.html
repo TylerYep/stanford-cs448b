@@ -44,8 +44,7 @@
 					<li><a href="#two" class="button">Motivation</a></li>
 					<li><a href="#three" class="button">Dataset</a></li>
 					<li><a href="#four" class="button">Visualizations</a></li>
-					<li><a href="#five" class="button">Results</a></li>
-					<li><a href="#six" class="button">Future Work</a></li>
+					<li><a href="#five" class="button">Conclusion</a></li>
 				</ul>
 			</div>
 		</section>
@@ -58,7 +57,7 @@
 						<header class="major">
 							<h2>Problem Statement</h2>
 						</header>
-						<p>Everyday, people are getting into traffic accidents around the country. However, <b>where</b>, <b>when</b>, and <b>in what situations</b> do these accidents occur most frequently?</p><p>In our project, we explore the the <b>most common accident patterns</b> in order to potentially help the prevention of future accidents. To examine these patterns, we will use <b>interactive visualization techniques</b> to most effectively communicate the high frequency situations found in the data.</p>
+						<p>Everyday, people are getting into traffic accidents around the country. However, <b>where</b>, <b>when</b>, and <b>in what situations</b> do these accidents occur most frequently?</p><p>In our project, we explore the the <b>most common accident patterns</b> from the past 4 years in order to potentially help  prevent future accidents. To examine these patterns, we will use <b>interactive visualization techniques</b> to most effectively communicate the high frequency situations found in the data.</p>
 					</div>
 					<div class="col-6 col-12-medium imp-medium">
 						<span class="image fit"><img src="images/traffic.jpg" alt="" style="border-radius: 25px"/></span>
@@ -161,103 +160,6 @@
 			</div>
 		</section>
 
-		<section class="main style2 special">
-			<div class="container">
-				<header class="major">
-					<h2>Los Angeles Map Visualization</h2>
-				</header>
-				<p>We tried several different designs for our estimator, some of which required more deep learning techniques than others.<br />However, our final design was simpler and more effective than trying to analyze all possible pairs of student submissions.</p>
-				<div class="box alt">
-					<div class="row gtr-uniform gtr-50">
-						<div class="col-4">
-							<!-- <span class="image fit"><img src="images/graph1.jpg" alt=""
-								style="border: 10px white solid"/></span> -->
-							<button type="button" class="button" data-toggle="modal" data-target="#idea1">
-								Idea 1
-							</button>
-						</div>
-						<div class="col-4">
-							<!-- <span class="image fit"><img src="images/pairs.png" alt=""
-								style="background: white; padding: 16px 0; border: 15px white solid" /></span> -->
-							<button type="button" class="button" data-toggle="modal" data-target="#idea2">
-								Idea 2
-							</button>
-						</div>
-						<div class="col-4">
-							<!-- <span class="image fit"><img src="images/patterns2.png" alt="" style="background: white; padding: 14px 0; border: 15px white solid" /></span> -->
-							<button type="button" class="button" data-toggle="modal" data-target="#idea3">
-								Idea 3
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Modals -->
-		<div class="modal fade" id="idea1" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-					<h3 class="modal-title" id="exampleModalCenterTitle">Idea 1</h3>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					</div>
-					<div class="modal-body">
-						<p>Our first idea was to create a graph of all submissions, in which each node was a submission and each edge meant that the second submission came after the first. However, trying this led to an extremely dense graph, with each submission with many edges coming out of it. From this, it became clear that we needed to be more thoughtful about how we were representing sequences.</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="button primary" data-dismiss="modal">
-							Cool!
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="modal fade" id="idea2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-					<h3 class="modal-title" id="exampleModalCenterTitle">Idea 2</h3>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					</div>
-					<div class="modal-body">
-						<p>Our second idea was to leverage each pair of submissions and try to learn some random walk model that could understand the path a student was taking and what their next submission might be. However, with so many pairs, this approach also quickly became infeasible.</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="button primary" data-dismiss="modal">
-							Cool!
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="modal fade" id="idea3" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-					<h3 class="modal-title" id="exampleModalCenterTitle">Idea 3</h3>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					</div>
-					<div class="modal-body">
-						<p>Our last approach, which was a part of our final design, involved trying to find simple patterns instead of trying to generalize across all possible pairs of submissions. We chose small patterns that we thought were indicators of ability, such as when a students made the wrong choice, but then backtracked to an earlier solution, and then counted instances of these occurrences.</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="button primary" data-dismiss="modal">
-							Cool!
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-
 		<section class="main style1">
 			<div class="container">
 				<div class="row gtr-150">
@@ -286,89 +188,16 @@
 			</div>
 		</section>
 
-		<!-- <section class="main style2">
-			<div class="container">
-				<header class="major">
-					<h2>Surprisal Detection</h2>
-				</header>
-				<p>The results of our experiments found examples of student submissions who had interesting sequences of submissions (possibly examples of cheating, as the student suddenly submitted the correct answer very abruptly). However, assuming the best case scenario, the results of our growth scoring is intended to showcase students that exhibit a high level of "surprisal" in their submissions - a large gain in solving rubric item problems is a strong sign of definitive learning.</p>
-				<p>We chose to model a large "surprisal" as a large change in ability obtained via changes in rubric items across submissions. In order to calculate this, we used a transition matrix to describe the change in score for any rubric item change.</p>
-			</div>
-		</section>
-
-		<section class="main style1">
-			<div class="container">
-				<header class="major">
-					<h2>Transition Matrix</h2>
-				</header>
-				<p><span class="image right"><img class="matrix" src="images/trans_matrix.png" alt="" /></span>We use a transition matrix to help assign a transition learning score for each rubric item from one submission to its subsequent submission. For an (i, j) entry, i refers to whether or not the first submission contains the current rubric item and j refers to whether or not the second submission contains the current rubric item. 0 denotes not containing a rubric item and 1 denotes containing a rubric item.</p>
-				<p>Therefore, we assign a transition score of +1 (applied to a discount factor which we shall in the following section) when a student goes from 1 to 0 (i.e. having a label to not having a label, yay!) and a transition score of -0.5 when a student goes from 0 to 1 (this allows a student to be able to recover by going from 1 to 0 and gaining a learning transition score of 1 discounted by a factor). If a student stays consistent (0 to 0 or 1 to 1) for a rubric item, then we give a transition score of 0.
-				</p>
-				<br/>
-				<header class="major">
-					<h3>Discount Factor</h3>
-				</header>
-				<p>When we have a transition score of +1 (i.e. when a student goes from 1 to 0 or from having a rubric item to not having that rubric item), we apply a discount factor of 0.9 for every time we have seen a transition from 1 to 0 after the first transition from 1 to 0 for this rubric item. For example, if a student goes from 1 to 0, then 0 to 1, then 1 to 0, the first transition score will be +1, the second transition score will be -0.5, and the third transition score will be +0.9.
-				</p>
-				<div class="container score">
-					<img class="score" src="images/score.png" alt="" />
-				</div>
-				<p>For an individual problem, a student’s problem score is calculated by first taking the sum of the transition scores and then dividing by the square root of the number of submissions. This helps us to differentiate between students who may have spammed submissions and students who submit a reasonable number of submissions. We take the square root of the number of submissions to prevent the problem score from shrinking too quickly. To calculate a student’s total learning score, we sum up all of these problem scores.</p>
-			</div>
-		</section> -->
-
-		<!-- 5. Results -->
+		<!-- 5. Conclusion -->
 		<section id="five" class="main style2 special">
 			<div class="container">
 				<header class="major">
-					<h2>Results</h2>
+					<h2>Conclusion</h2>
 				</header>
-				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
-						<!-- <span class="image fit"><img src="images/ability4.png" alt=""
-							style="border-bottom: 215px black solid"/></span> -->
-						<h3>Low Ability Gain Distribution</h3>
-						<p>The above student had a very low estimated change in ability, even though they got a perfect submission in every problem on the first try. This makes sense, as there is no evidence to indicate that the student learned anything in the process, which means our score of 0 is an accurate measurement.</p>
-					</div>
-					<div class="col-6 col-12-medium">
-						<!-- <span class="image fit"><img src="images/ability1.png" alt="" /></span> -->
-						<h3>High Ability Gain Example</h3>
-						<p>This student did not get the correct solution on the first try, and tried several different values for the for loop variables before getting the correct result. Because of their efficient process, our algorithm deems that the student grew in ability. The final reported score gives the sum of all growth scores for all four problems.</p>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- 6. Future Work-->
-		<section id="six" class="main style1 special">
-			<div class="container">
-				<header class="major">
-					<h2>Future Work</h2>
-				</header>
-				<p>In this project, we both learned the immense care it takes to model and generate data for the zero-shot learning problem, as well as the difficulties of working with time-series data across many different dimensions.</p>
+				<p>From this project, we hope you've learned the importance .</p>
 				<p>To extend this project further, our next steps would likely look at incorporating some measure of confidence in our ability scores for students, as we want predictions on students with few submissions to be less confident than students with many submissions and attempted many problems. Additionally, we may also want to look at weighting categories of rubric items differently from others. For example, for loops and repeats may be more difficult to learn, so we want to "reward" ability scores that showcase a lot of development in those fields.</p>
 			</div>
 		</section>
-
-		<!-- <section class="main style1 special">
-			<div class="container">
-				<header class="major">
-					<h2>Results Analysis</h2>
-				</header>
-				<div class="row gtr-150">
-					<div class="col-6 col-12-medium">
-						<span class="image fit"><img src="images/totalScoresGraphP3-old-formula.png" alt="" /></span><h3>Ability Gain Distribution</h3>
-						<p>This graph depicts our score distribution using the transition matrix but without including the discount factor. We can see that the majority of submissions have no change in ability, which is expected, however there is a second group around the 3.0 range that had significant takeaways from the assignment.</p>
-					</div>
-					<div class="col-6 col-12-medium">
-						<span class="image fit"><img src="images/totalScoresGraphP3.png" alt="" /></span>
-						<h3>Ability Gain Distribution w/ Discount Factor</h3>
-						<p>In our updated model, we include a discount factor in order to lessen the correlation of high scores with many submissions. With this new distribution, we are able to better distinguish the students that learned the material in a more intentional way, over the students who simply submitted the most times.</p>
-					</div>
-				</div>
-				<p>Note that these distributions represent a <i>single</i> problem's scores, while the program output above shows the sum of all problem scores.</p>
-			</div>
-		</section> -->
 
 		<!-- Footer -->
 		<section id="footer">

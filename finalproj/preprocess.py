@@ -1,9 +1,9 @@
-# import pandas as pd
-# import networkx as nx
-# from sklearn.neighbors import NearestNeighbors
-# import numpy as np
+import pandas as pd
+import networkx as nx
+from sklearn.neighbors import NearestNeighbors
+import numpy as np
 import csv
-# from tqdm import tqdm
+from tqdm import tqdm
 
 
 def get_month_and_year():
@@ -26,6 +26,7 @@ def get_month_and_year():
                     hour = split_time[0]
                     new_f.write(line[:-1] + ',' + year + ',' + month + ',' + day + ',' + hour + '\n')
 
+
 def get_month_and_severity_counts():
     first_line = True
     data = [ [0] * 4 for _ in range(12)]
@@ -41,6 +42,7 @@ def get_month_and_severity_counts():
                     severity = int(split_line[3])
                     data[month-1][severity-1] += 1
     print(data)
+
 
 def remove_duplicates():
     first_line = True
