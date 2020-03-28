@@ -35,9 +35,11 @@ def get_month_and_severity_counts():
                 first_line = False
             else:
                 split_line = line.split(',')
-                month = int(split_line[-3])
-                severity = int(split_line[3])
-                data[month-1][severity-1] += 1
+                year = int(split_line[-4])
+                if year == 2019:
+                    month = int(split_line[-3])
+                    severity = int(split_line[3])
+                    data[month-1][severity-1] += 1
     print(data)
 
 def remove_duplicates():
