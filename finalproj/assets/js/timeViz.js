@@ -1,6 +1,6 @@
 const margin2 = {top: 25, right: 140, bottom: 50, left: 50},
   width = 1100 - margin2.left - margin2.right,
-  height = 800 - margin2.top - margin2.bottom;
+  height = 400 - margin2.top - margin2.bottom;
 const svg2 = d3.select("#timeVis")
   .attr("width", width + margin2.left + margin2.right)
   .attr("height", height + margin2.top + margin2.bottom)
